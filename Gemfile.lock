@@ -1,0 +1,13 @@
+GEM
+  specs:
+    strscan (3.1.0)
+
+PLATFORMS
+  arm64-darwin-22
+  ruby
+
+DEPENDENCIES
+  strscan
+
+BUNDLED WITH
+   2.5.22
