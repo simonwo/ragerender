@@ -1,5 +1,8 @@
 GEM
   specs:
+    minitest (5.25.4)
+    rake (13.2.1)
+    rsec (1.0.0)
     strscan (3.1.0)
 
 PLATFORMS
@@ -7,6 +10,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  minitest
+  rake
+  rsec (~> 1.0)
   strscan
 
 BUNDLED WITH
