@@ -14,7 +14,13 @@ module RageRender
     when String
       value =~ /^[0-9]+$/ ? value : "\"#{value}\""
     when Language::Variable
-      value.path.join('.')
+      if value.path.first == 'l' && value.path.last == 'iteration'
+        'forloop.index0'
+      elsif value.path.first == 'l' && value.path.last == 'aiteration'
+        'forloop.index'
+      else
+        value.path.join('.')
+      end
     when nil
       ""
     end
@@ -29,7 +35,7 @@ module RageRender
         chunk
 
       when Language::Variable
-        "{{ #{chunk.path.join('.')} }}"
+        "{{ #{render_value chunk} }}"
 
       when Language::Conditional
         tag_stack << :endif
@@ -37,6 +43,18 @@ module RageRender
         lhs = render_value chunk.lhs
         rhs = render_value chunk.rhs
         operator = chunk.operator
+
+        if chunk.lhs.is_a?(Language::Variable) && chunk.lhs.path.first == "l"
+          case chunk.lhs.path.last
+          when "is_first", "is_last"
+            lhs = "forloop.#{chunk.lhs.path.last[3..]}"
+          when "is_even", "is_odd"
+            lhs = 'forloop.index0'
+            rhs = '2'
+            operator = (chunk.lhs.path.last == 'is_even' ? '%' : '!%')
+          end
+        end
+
         output = Array.new
         case operator
         when '~', '!~'
