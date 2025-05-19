@@ -80,7 +80,7 @@ module RageRender
         params = chunk.params.map {|p| render_value p }
         name = LIQUID_FUNCTIONS.fetch(chunk.name, chunk.name)
         args = params.drop(1).map {|p| "#{name}: #{p}" }.join(' | ')
-        "{{ #{params.first} | #{args} }}"
+        "{{ #{params.first} | #{args.empty? ? name : args} }}"
 
       when Language::Loop
         tag_stack << :endfor
