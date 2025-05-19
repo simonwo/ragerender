@@ -44,6 +44,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'rsec', '~> 1'
+  spec.add_dependency 'dimensions', '~> 1.3'
 
   spec.add_development_dependency 'rake', '~> 13'
   spec.add_development_dependency 'minitest', '~> 5'
