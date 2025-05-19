@@ -38,7 +38,7 @@ module RageRender
         "{{ #{render_value chunk} }}"
 
       when Language::Conditional
-        tag_stack << :endif
+        tag_stack << (chunk.reversed ? :endunless : :endif)
 
         lhs = render_value chunk.lhs
         rhs = render_value chunk.rhs
