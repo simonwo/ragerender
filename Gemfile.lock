@@ -1,19 +1,24 @@
+PATH
+  remote: .
+  specs:
+    ragerender (0)
+      rsec (~> 1)
+
 GEM
+  remote: https://rubygems.org/
   specs:
     minitest (5.25.4)
     rake (13.2.1)
     rsec (1.0.0)
-    strscan (3.1.0)
 
 PLATFORMS
   arm64-darwin-22
   ruby
 
 DEPENDENCIES
-  minitest
-  rake
-  rsec (~> 1.0)
-  strscan
+  minitest (~> 5)
+  ragerender!
+  rake (~> 13)
 
 BUNDLED WITH
    2.5.22

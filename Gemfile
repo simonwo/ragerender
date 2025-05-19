@@ -1,5 +1,3 @@
-gem 'strscan'
+source 'https://rubygems.org'
 
-gem "rsec", "~> 1.0"
-gem "minitest"
-gem "rake"
+gemspec
