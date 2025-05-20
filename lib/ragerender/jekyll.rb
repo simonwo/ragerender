@@ -11,6 +11,10 @@ def comicfury_date time
   time.strftime(fmt)
 end
 
+def default_image_path comic
+  "images/#{comic.data['slug']}.jpg"
+end
+
 Jekyll::Hooks.register :site, :after_init do |site|
   site.config['collections']['comics'] = {
     'output' => true,
@@ -35,6 +39,41 @@ Jekyll::Hooks.register :site, :post_read do |site|
   end
 end
 
+SPECIAL_COMIC_SLUGS = %w{frontpage index}
+
+# The index for the site can be set by configuration
+Jekyll::Hooks.register :site, :post_read do |site|
+  comics = site.collections['comics']
+  frontpage = site.config.fetch('frontpage', 'latest')
+  index = case frontpage
+  when 'latest'
+    comics.docs.last
+  when 'first'
+    comics.docs.first
+  when 'chapter'
+    chapter = comics.docs.last.data['chapter']
+    comics.docs.detect {|c| c.data['chapter'] == chapter }
+  else
+    site.pages.detect {|p| p.data["slug"] == frontpage }
+  end.dup
+  index.instance_variable_set(:"@destination", {site.dest => File.join(site.dest, 'index.html')})
+  index.instance_variable_set(:"@data", index.data.dup)
+  index.data['image'] ||= default_image_path(index)
+  index.data['slug'] = 'frontpage'
+  comics.docs << index
+end
+
+# The index for the comics collection is always the latest comic
+Jekyll::Hooks.register :site, :post_read do |site|
+  comics = site.collections['comics']
+  index = comics.docs.last.dup
+  index.remove_instance_variable(:"@destination")
+  index.instance_variable_set(:"@data", index.data.dup)
+  index.data['image'] ||= default_image_path(index)
+  index.data['slug'] = 'index'
+  comics.docs << index
+end
+
 Jekyll::Hooks.register :comics, :pre_render do |comic, payload|
   %w{bannerads copyrights allowratings showpermalinks showcomments allowcomments}.each do |var|
     payload[var] = comic.site.config[var] || nil
@@ -56,12 +95,13 @@ Jekyll::Hooks.register :comics, :pre_render do |comic, payload|
   end
   payload['pagetitle'] = comic.data['title']
 
+  all_comics = comic.collection.docs.reject {|c| SPECIAL_COMIC_SLUGS.include? c.data['slug'] }
   payload['iscomicpage'] = comic.collection.label == 'comics'
   payload['isextrapage'] = comic.collection.label != 'comics'
   payload['comicid'] = "#{comic.data['slug']}-#{comic.date.strftime('%s')}",
   payload['webcomicurl'] = comic.site.baseurl
   payload['comictitle'] = comic.data['title']
-  payload['usechapters'] = comic.collection.docs.any? do |c|
+  payload['usechapters'] = all_comics.any? do |c|
     c.data.include? 'chapter'
   end
   payload['haschapter'] = comic.data.include?('chapter')
@@ -70,7 +110,7 @@ Jekyll::Hooks.register :comics, :pre_render do |comic, payload|
   payload['lastupdatedmy'] = Time.now.strftime('%d/%m/%Y')
   payload['permalink'] = comic.url
 
-  payload['dropdown'] = comic.collection.docs.reduce([]) do |dropdown, c|
+  payload['dropdown'] = all_comics.reduce([]) do |dropdown, c|
     new_group = dropdown.last.nil? ? true : dropdown.last['grouplabel'] != c.data['chapter']
     if new_group && !dropdown.last.nil? && dropdown.last['title'] == c.data['chapter']
       dropdown.last['endgroup'] = true
@@ -116,13 +156,13 @@ Jekyll::Hooks.register :comics, :pre_render do |comic, payload|
   payload['css'] = comic.site.static_files.select {|f| f.extname == '.css'}.map do |f|
     File.read f.path
   end.join
-  payload['custom'] = comic.data['custom'].reject {|(k, v)| v.nil? || v.empty? }
-  payload['isfirstcomic'] = comic.collection.docs.first == comic
-  payload['islastcomic'] = comic.collection.docs.last == comic
-  payload['prevcomic'] = payload["isfirstcomic"] ? nil : comic.collection.docs.map(&:url).each_cons(2).detect {|prev, this| this == comic.url }.first
-  payload['nextcomic'] = payload['islastcomic'] ? nil : comic.collection.docs.map(&:url).each_cons(2).detect {|this, nexx| this == comic.url }.last
+  payload['custom'] = (comic.data['custom'] || {}).reject {|k, v| v.nil? }.reject {|k, v| v.respond_to?(:empty?) && v.empty? }
+  payload['isfirstcomic'] = all_comics.first == comic
+  payload['islastcomic'] = all_comics.last == comic
+  payload['prevcomic'] = payload["isfirstcomic"] ? nil : all_comics.each_cons(2).detect {|prev, this| this == comic }.first.url
+  payload['nextcomic'] = payload['islastcomic'] ? nil : all_comics.each_cons(2).detect {|this, nexx| this == comic }.last.url
 
-  image_path = comic.data['image'] || "images/#{comic.data['slug']}.jpg"
+  image_path = comic.data['image'] || default_image_path(comic)
   payload['comicimageurl'] = (comic.site.baseurl || '') + image_path
   payload['comicwidth'] = Dimensions.width(image_path)
   payload['comicheight'] = Dimensions.height(image_path)
