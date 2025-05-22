@@ -20,6 +20,10 @@ Jekyll::Hooks.register :site, :after_init do |site|
     'output' => true,
     'permalink' => '/:collection/:slug.html'
   }
+  site.config['collections']['posts'] = {
+    'output' => true,
+    'permalink' => '/blogarchive/:slug.html'
+  }
 
   site.config['defaults'] << {
     'scope' => {
@@ -29,6 +33,16 @@ Jekyll::Hooks.register :site, :after_init do |site|
     'values' => {
       'layout' => 'comic-page',
     },
+  }
+
+  site.config['defaults'] << {
+    'scope' => {
+      'path' => '',
+      'type' => 'posts',
+    },
+    'values' => {
+      'layout' => 'blog-display',
+    }
   }
 end
 
@@ -74,41 +88,61 @@ Jekyll::Hooks.register :site, :post_read do |site|
   comics.docs << index
 end
 
-Jekyll::Hooks.register :comics, :pre_render do |comic, payload|
+Jekyll::Hooks.register :posts, :pre_render do |post, payload|
+  payload['blogtitle'] = post.data['title']
+  payload['authorname'] = post.data['author']
+  payload['blog'] = post.content
+
+  site = post.site
+  is_first = site.posts.docs.first == post
+  is_last = site.posts.docs.last == post
+  payload['prevbloglink'] = is_first ? nil : site.posts.docs.each_cons(2).detect {|prev, this| this == post }.first.url
+  payload['nextbloglink'] = is_last ? nil : site.posts.docs.each_cons(2).detect {|this, nexx| this == post }.last.url
+end
+
+Jekyll::Hooks.register :documents, :pre_render do |doc, payload|
+  site = doc.site
   %w{bannerads copyrights allowratings showpermalinks showcomments allowcomments}.each do |var|
-    payload[var] = comic.site.config[var] || nil
+    payload[var] = site.config[var] || nil
   end
-  payload['banner'] = (comic.site.baseurl || '') + comic.site.config['banner']
-  payload['webcomicavatar'] = (comic.site.baseurl || '') + comic.site.config['webcomicavatar']
+
+  payload['webcomicurl'] = site.baseurl
+  payload['banner'] = (site.baseurl || '') + site.config['banner']
+  payload['webcomicavatar'] = (site.baseurl || '') + site.config['webcomicavatar']
   payload['banneradcode'] = ''
-  payload['webcomicname'] = comic.site.config['title']
-  payload['webcomicslogan'] = comic.site.config['description']
-  payload['hasblogs'] = comic.site.collections['posts'].docs.any?
+  payload['webcomicname'] = site.config['title']
+  payload['webcomicslogan'] = site.config['description']
+  payload['hasblogs'] = site.posts.docs.any?
   payload['hidefromhost'] = false
-  payload['extrapages'] = comic.site.pages.map do |page|
+  payload['extrapages'] = site.pages.map do |page|
     {'link' => page.url, 'title' => page.data['title']}
   end
   payload['cfscriptcode'] = '<script type="text/javascript">function jumpTo(place) { window.location = place; }</script>'
+  payload['css'] = site.static_files.select {|f| f.extname == '.css'}.map do |f|
+    File.read f.path
+  end.join
 
   %w{rating votecount}.each do |var|
-    payload[var] = comic.data[var] || nil
+    payload[var] = doc.data[var] || nil
   end
-  payload['pagetitle'] = comic.data['title']
+  payload['pagetitle'] = doc.data['title']
 
+  payload['posttime'] = comicfury_date(doc.date)
+  payload['iscomicpage'] = doc.collection.label == 'comics'
+  payload['isextrapage'] = doc.is_a?(Jekyll::Page)
+  payload['lastupdatedmy'] = Time.now.strftime('%d/%m/%Y')
+  payload['permalink'] = doc.url
+end
+
+Jekyll::Hooks.register :comics, :pre_render do |comic, payload|
   all_comics = comic.collection.docs.reject {|c| SPECIAL_COMIC_SLUGS.include? c.data['slug'] }
-  payload['iscomicpage'] = comic.collection.label == 'comics'
-  payload['isextrapage'] = comic.collection.label != 'comics'
   payload['comicid'] = "#{comic.data['slug']}-#{comic.date.strftime('%s')}",
-  payload['webcomicurl'] = comic.site.baseurl
   payload['comictitle'] = comic.data['title']
   payload['usechapters'] = all_comics.any? do |c|
     c.data.include? 'chapter'
   end
   payload['haschapter'] = comic.data.include?('chapter')
   payload['chaptername'] = comic.data['chapter']
-  payload['posttime'] = comicfury_date(comic.date)
-  payload['lastupdatedmy'] = Time.now.strftime('%d/%m/%Y')
-  payload['permalink'] = comic.url
 
   payload['dropdown'] = all_comics.reduce([]) do |dropdown, c|
     new_group = dropdown.last.nil? ? true : dropdown.last['grouplabel'] != c.data['chapter']
@@ -153,9 +187,6 @@ Jekyll::Hooks.register :comics, :pre_render do |comic, payload|
     'profilelink' => nil, # TODO
   }]
 
-  payload['css'] = comic.site.static_files.select {|f| f.extname == '.css'}.map do |f|
-    File.read f.path
-  end.join
   payload['custom'] = (comic.data['custom'] || {}).reject {|k, v| v.nil? }.reject {|k, v| v.respond_to?(:empty?) && v.empty? }
   payload['isfirstcomic'] = all_comics.first == comic
   payload['islastcomic'] = all_comics.last == comic
