@@ -3,6 +3,7 @@ require 'jekyll'
 require 'dimensions'
 require_relative 'language'
 require_relative 'to_liquid'
+require_relative 'jekyll/blog_archive'
 
 # E.g. 20th Nov 2024, 2:35 PM
 SUFFIXES = {1 => 'st', 2 => 'nd', 3 => 'rd'}
