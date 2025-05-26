@@ -1,3 +1,4 @@
+require 'etc'
 require 'stringio'
 require 'jekyll'
 require 'dimensions'
@@ -17,6 +18,7 @@ def default_image_path comic
 end
 
 Jekyll::Hooks.register :site, :after_init do |site|
+  site.config['title'] ||= File.basename(site.source)
   site.config['collections']['comics'] = {
     'output' => true,
     'permalink' => '/:collection/:slug.html'
@@ -26,7 +28,16 @@ Jekyll::Hooks.register :site, :after_init do |site|
     'permalink' => '/blogarchive/:slug.html'
   }
 
-  site.config['defaults'] << {
+  site.config['defaults'].prepend({
+    'scope' => {
+      'path' => '',
+    },
+    'values' => {
+      'author' => Etc.getlogin,
+    }
+  })
+
+  site.config['defaults'].prepend({
     'scope' => {
       'path' => '',
       'type' => 'comics',
@@ -34,9 +45,9 @@ Jekyll::Hooks.register :site, :after_init do |site|
     'values' => {
       'layout' => 'comic-page',
     },
-  }
+  })
 
-  site.config['defaults'] << {
+  site.config['defaults'].prepend({
     'scope' => {
       'path' => '',
       'type' => 'posts',
@@ -44,7 +55,7 @@ Jekyll::Hooks.register :site, :after_init do |site|
     'values' => {
       'layout' => 'blog-display',
     }
-  }
+  })
 end
 
 Jekyll::Hooks.register :site, :post_read do |site|
