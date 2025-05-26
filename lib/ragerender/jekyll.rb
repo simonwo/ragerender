@@ -14,7 +14,13 @@ def default_image_path comic
 end
 
 Jekyll::Hooks.register :site, :after_init do |site|
+  # This is obviously quite naughty for many reasons,
+  # but it's the only way to get the theme selected
+  # without requiring the user to write a config file
+  site.config['theme'] ||= 'ragerender'
   site.config['title'] ||= File.basename(site.source)
+  site.config = site.config
+
   site.config['collections']['comics'] = {
     'output' => true,
     'permalink' => '/:collection/:slug.html'
@@ -39,6 +45,7 @@ Jekyll::Hooks.register :site, :after_init do |site|
       'type' => 'comics',
     },
     'values' => {
+      'permalink' => '/:collection/:slug.html',
       'layout' => 'comic-page',
     },
   })
@@ -50,6 +57,7 @@ Jekyll::Hooks.register :site, :after_init do |site|
     },
     'values' => {
       'layout' => 'blog-display',
+      'permalink' => '/blogarchive/:slug.html',
     }
   })
 end
@@ -113,8 +121,12 @@ Jekyll::Hooks.register :documents, :pre_render do |doc, payload|
   end
 
   payload['webcomicurl'] = site.baseurl
-  payload['banner'] = (site.baseurl || '') + site.config['banner']
-  payload['webcomicavatar'] = (site.baseurl || '') + site.config['webcomicavatar']
+  if site.config['banner']
+    payload['banner'] = (site.baseurl || '') + site.config['banner']
+  end
+  if site.config['webcomicavatar']
+    payload['webcomicavatar'] = (site.baseurl || '') + site.config['webcomicavatar']
+  end
   payload['banneradcode'] = ''
   payload['webcomicname'] = site.config['title']
   payload['webcomicslogan'] = site.config['description']

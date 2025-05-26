@@ -4,6 +4,27 @@ require 'jekyll/drops/document_drop'
 require_relative '../date_formats'
 require_relative 'named_data_delegator'
 
+# Creates comics for each file found in the 'images' directory
+# that does not already have an associated comic object.
+class ComicFromImageGenerator < Jekyll::Generator
+  def generate site
+    images = site.static_files.select {|f| f.relative_path.start_with? '/images' }.map {|f| [f.basename, f] }.to_h
+    comics = site.collections['comics'].docs.map {|c| [c.basename_without_ext, c] }.to_h
+    missing = Set.new(images.keys) - Set.new(comics.keys)
+    missing -= Set.new(comics.map {|k, c| c.data['image'] }.reject(&:nil?).map {|img| File.basename(img, '.*') })
+    missing.each do |slug|
+      comic = Jekyll::Document.new(images[slug].relative_path, site: site, collection: site.collections['comics'])
+      comic.send(:merge_defaults)
+      comic.data['slug'] = slug
+      comic.data['title'] = slug
+      comic.data['date'] = images[slug].modified_time
+      comic.data['image'] = images[slug].relative_path
+      comic.content = nil
+      site.collections['comics'].docs << comic
+    end
+  end
+end
+
 # The index for the comics collection is always the latest comic.
 class LatestComicGenerator < Jekyll::Generator
   priority :low
