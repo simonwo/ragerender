@@ -126,7 +126,7 @@ Jekyll::Hooks.register :documents, :pre_render do |doc, payload|
   payload['webcomicslogan'] = site.config['description']
   payload['hasblogs'] = site.posts.docs.any?
   payload['hidefromhost'] = false
-  payload['extrapages'] = site.pages.map do |page|
+  payload['extrapages'] = site.pages.reject {|page| page.data['hidden'] }.map do |page|
     {'link' => page.url, 'title' => page.data['title']}
   end
   payload['cfscriptcode'] = '<script type="text/javascript">function jumpTo(place) { window.location = place; }</script>'
