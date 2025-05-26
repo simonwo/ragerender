@@ -1,5 +1,6 @@
 require 'jekyll/drops/drop'
 require 'jekyll/drops/document_drop'
+require_relative '../date_formats'
 require_relative 'named_data_delegator'
 
 # Pass the right variables to blog archive pages.
@@ -11,13 +12,6 @@ end
 
 module RageRender
   BLOGS_PER_PAGE = 15
-
-  # E.g. 20th Nov 2024, 2:35 PM
-  SUFFIXES = {1 => 'st', 2 => 'nd', 3 => 'rd'}
-  def comicfury_date time
-    fmt = "%-d#{SUFFIXES.fetch(time.day, 'th')} %b %Y, %-I:%M %p"
-    time.strftime(fmt)
-  end
 
   def self.duplicate_page page, path
     site = page.site

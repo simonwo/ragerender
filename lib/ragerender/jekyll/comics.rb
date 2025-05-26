@@ -1,0 +1,160 @@
+require 'jekyll/generator'
+require 'jekyll/document'
+require 'jekyll/drops/document_drop'
+require_relative '../date_formats'
+require_relative 'named_data_delegator'
+
+# The index for the comics collection is always the latest comic.
+class LatestComicGenerator < Jekyll::Generator
+  priority :low
+
+  def generate site
+    comics = site.collections['comics']
+    index = comics.docs.last.dup
+    index.instance_variable_set(:"@data", index.data.dup)
+    index.data['image'] ||= default_image_path(index)
+    index.data['slug'] = 'index'
+    comics.docs << index
+  end
+end
+
+Jekyll::Hooks.register :comics, :pre_render do |page, payload|
+  payload.merge! RageRender::ComicDrop.new(page).to_liquid
+end
+
+SPECIAL_COMIC_SLUGS = %w{frontpage index}
+
+module RageRender
+  class ComicDrop < Jekyll::Drops::DocumentDrop
+    extend NamedDataDelegator
+
+    delegate_method_as :id, :comicid
+    def_data_delegator :title, :comictitle
+    def_data_delegator :chapter, :chaptername
+
+    def usechapters
+      all_comics.any? {|comic| comic.data.include? 'chapter' }
+    end
+
+    def haschapter
+      @obj.data.include? 'chapter'
+    end
+
+    def dropdown
+      all_comics.each_with_object([]) do |c, dropdown|
+        new_group = dropdown.last.nil? ? true : dropdown.last['grouplabel'] != c.data['chapter']
+        if new_group && !dropdown.last.nil? && dropdown.last['title'] == c.data['chapter']
+          dropdown.last['endgroup'] = true
+        end
+
+        in_this_chapter = @obj.data['chapter'] == c.data['chapter']
+        if in_this_chapter
+          dropdown << {
+            'is_selected' => @obj == c,
+            'is_disabled' => false,
+            'title' => c.data['title'],
+            'grouplabel' => c.data['chapter'],
+            'newgroup' => new_group,
+            'endgroup' => false,
+            'url' => c.url,
+          }
+        elsif new_group
+          dropdown << {
+            'is_selected' => false,
+            'is_disabled' => false,
+            'title' => c.data['chapter'],
+            'grouplabel' => c.data['chapter'],
+            'newgroup' => false,
+            'endgroup' => false,
+            'url' => c.url, # navigating to chapter just goes to first page
+          }
+        end
+      end
+    end
+
+    def authornotes
+      @obj.data['authornotes'] || [{
+        'is_reply' => false,
+        'comment' => @obj.content,
+        'isguest' => false,
+        'avatar' => nil,
+        'authorname' => @obj.data['author'],
+        'commentanchor' => "comment-#{@obj.date.strftime('%s')}",
+        'posttime' => comicfury_date(@obj.date),
+        'profilelink' => nil, # TODO
+      }]
+    end
+
+    def custom
+      @obj.data.fetch('custom', {}).reject do |k, v|
+        v.nil? || (v.respond_to?(:empty?) && v.empty?)
+      end
+    end
+
+    def isfirstcomic
+      all_comics.first == @obj
+    end
+
+    def islastcomic
+      all_comics.last == @obj
+    end
+
+    def prevcomic
+      @obj.previous_doc&.url
+    end
+
+    def nextcomic
+      @obj.next_doc&.url
+    end
+
+    def comicimageurl
+      File.join (@obj.site.baseurl || ''), image_relative_path
+    end
+
+    def comicwidth
+      @width ||= Dimensions.width image_path
+    end
+
+    def comicheight
+      @height ||= Dimensions.height image_path
+    end
+
+    # An HTML tag to print for the comic image. If there is a future image, then
+    # this is also a link to the next comic page.
+    def comicimage
+      linkopen = nextcomic ? <<~HTML : ''
+        <a href="#{nextcomic}">
+      HTML
+      image = <<~HTML
+        <img id="comicimage" src="#{comicimageurl}" width="#{comicwidth}" height="#{comicheight}">
+      HTML
+      linkclose = nextcomic ? <<~HTML : ''
+        </a>
+      HTML
+      [linkopen, image, linkclose].join
+    end
+
+    def to_liquid
+      super.reject do |k, v|
+        Jekyll::Drops::DocumentDrop::NESTED_OBJECT_FIELD_BLACKLIST.include? k
+      end.to_h
+    end
+
+    private
+    def all_comics
+      @obj.collection.docs.reject {|c| SPECIAL_COMIC_SLUGS.include? c.data['slug'] }
+    end
+
+    def image_path
+      File.join @obj.site.source, image_relative_path
+    end
+
+    def image_relative_path
+      @obj.data['image'] || default_image_path
+    end
+
+    def default_image_path
+      File.join 'images', "#{@obj.data['slug']}.jpg"
+    end
+  end
+end
