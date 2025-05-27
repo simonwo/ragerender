@@ -4,41 +4,6 @@ require 'jekyll/drops/document_drop'
 require_relative '../date_formats'
 require_relative 'named_data_delegator'
 
-# Creates comics for each file found in the 'images' directory
-# that does not already have an associated comic object.
-class ComicFromImageGenerator < Jekyll::Generator
-  def generate site
-    images = site.static_files.select {|f| f.relative_path.start_with? '/images' }.map {|f| [f.basename, f] }.to_h
-    comics = site.collections['comics'].docs.map {|c| [c.basename_without_ext, c] }.to_h
-    missing = Set.new(images.keys) - Set.new(comics.keys)
-    missing -= Set.new(comics.map {|k, c| c.data['image'] }.reject(&:nil?).map {|img| File.basename(img, '.*') })
-    missing.each do |slug|
-      comic = Jekyll::Document.new(images[slug].relative_path, site: site, collection: site.collections['comics'])
-      comic.send(:merge_defaults)
-      comic.data['slug'] = slug
-      comic.data['title'] = slug
-      comic.data['date'] = images[slug].modified_time
-      comic.data['image'] = images[slug].relative_path
-      comic.content = nil
-      site.collections['comics'].docs << comic
-    end
-  end
-end
-
-# The index for the comics collection is always the latest comic.
-class LatestComicGenerator < Jekyll::Generator
-  priority :low
-
-  def generate site
-    comics = site.collections['comics']
-    index = comics.docs.last.dup
-    index.instance_variable_set(:"@data", index.data.dup)
-    index.data['image'] ||= default_image_path(index)
-    index.data['slug'] = 'index'
-    comics.docs << index
-  end
-end
-
 Jekyll::Hooks.register :comics, :pre_render do |page, payload|
   payload.merge! RageRender::ComicDrop.new(page).to_liquid
 end
@@ -46,6 +11,52 @@ end
 SPECIAL_COMIC_SLUGS = %w{frontpage index}
 
 module RageRender
+  # Creates comics for each file found in the 'images' directory
+  # that does not already have an associated comic object.
+  class ComicFromImageGenerator < Jekyll::Generator
+    def generate site
+      images = site.static_files.select {|f| f.relative_path.start_with? '/images' }.map {|f| [f.basename, f] }.to_h
+      comics = site.collections['comics'].docs.map {|c| [c.basename_without_ext, c] }.to_h
+      missing = Set.new(images.keys) - Set.new(comics.keys)
+      missing -= Set.new(comics.map {|k, c| c.data['image'] }.reject(&:nil?).map {|img| File.basename(img, '.*') })
+      missing.each do |slug|
+        comic = Jekyll::Document.new(images[slug].relative_path, site: site, collection: site.collections['comics'])
+        comic.send(:merge_defaults)
+        comic.data['slug'] = slug
+        comic.data['title'] = slug
+        comic.data['date'] = images[slug].modified_time
+        comic.data['image'] = images[slug].relative_path
+        comic.content = nil
+        site.collections['comics'].docs << comic
+      end
+    end
+  end
+
+  # The index for the comics collection is always the latest comic.
+  class LatestComicGenerator < Jekyll::Generator
+    priority :low
+
+    def generate site
+      comics = site.collections['comics']
+      index = comics.docs.last.dup
+      index.instance_variable_set(:"@data", index.data.dup)
+      index.data['slug'] = 'index'
+      comics.docs << index
+    end
+  end
+
+  class DefaultImageSetter < Jekyll::Generator
+    def generate site
+      site.collections['comics'].docs.each do |comic|
+        comic.data['image'] ||= default_image_path(comic)
+      end
+    end
+
+    def default_image_path comic
+      "images/#{comic.data['slug']}.jpg"
+    end
+  end
+
   class ComicDrop < Jekyll::Drops::DocumentDrop
     extend NamedDataDelegator
 
@@ -133,11 +144,11 @@ module RageRender
     end
 
     def comicwidth
-      @width ||= Dimensions.width image_path
+      image_obj.data['width'] ||= Dimensions.width image_path
     end
 
     def comicheight
-      @height ||= Dimensions.height image_path
+      image_obj.data['height'] ||= Dimensions.height image_path
     end
 
     # An HTML tag to print for the comic image. If there is a future image, then
@@ -166,16 +177,16 @@ module RageRender
       @obj.collection.docs.reject {|c| SPECIAL_COMIC_SLUGS.include? c.data['slug'] }
     end
 
+    def image_obj
+      @image_obj ||= @obj.site.static_files.detect {|f| f.relative_path == image_relative_path }
+    end
+
     def image_path
-      File.join @obj.site.source, image_relative_path
+      image_obj.path
     end
 
     def image_relative_path
-      @obj.data['image'] || default_image_path
-    end
-
-    def default_image_path
-      File.join 'images', "#{@obj.data['slug']}.jpg"
+      Pathname.new('/').join(@obj.data['image']).to_s
     end
   end
 end

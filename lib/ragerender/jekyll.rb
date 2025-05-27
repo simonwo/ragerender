@@ -9,10 +9,6 @@ require_relative 'jekyll/blog_archive'
 require_relative 'jekyll/comics'
 require_relative 'jekyll/overview'
 
-def default_image_path comic
-  "images/#{comic.data['slug']}.jpg"
-end
-
 Jekyll::Hooks.register :site, :after_init do |site|
   # This is obviously quite naughty for many reasons,
   # but it's the only way to get the theme selected
@@ -96,7 +92,6 @@ class FrontpageGenerator < Jekyll::Generator
     end.dup
     index.instance_variable_set(:"@destination", {site.dest => File.join(site.dest, 'index.html')})
     index.instance_variable_set(:"@data", index.data.dup)
-    index.data['image'] ||= default_image_path(index)
     index.data['slug'] = 'frontpage'
     collection << index
   end
