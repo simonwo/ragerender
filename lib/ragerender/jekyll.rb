@@ -10,6 +10,7 @@ require_relative 'jekyll/blog_archive'
 require_relative 'jekyll/comics'
 require_relative 'jekyll/chapter'
 require_relative 'jekyll/overview'
+require_relative 'jekyll/error'
 
 def setup_collection site, label, permalink, **kwargs
   site.config['collections'][label.to_s] = {
