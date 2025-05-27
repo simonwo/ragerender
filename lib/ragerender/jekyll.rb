@@ -8,7 +8,28 @@ require_relative 'date_formats'
 require_relative 'jekyll/archive'
 require_relative 'jekyll/blog_archive'
 require_relative 'jekyll/comics'
+require_relative 'jekyll/chapter'
 require_relative 'jekyll/overview'
+
+def setup_collection site, label, permalink, **kwargs
+  site.config['collections'][label.to_s] = {
+    'output' => true,
+    'permalink' => permalink,
+  }
+
+  site.config['defaults'].prepend({
+    'scope' => {
+      'path' => '',
+      'type' => label.to_s,
+    },
+    'values' => {
+      'permalink' => permalink,
+      **kwargs.map do |k, v|
+        [k.to_s, v]
+      end.to_h,
+    },
+  })
+end
 
 Jekyll::Hooks.register :site, :after_init do |site|
   # This is obviously quite naughty for many reasons,
@@ -18,14 +39,9 @@ Jekyll::Hooks.register :site, :after_init do |site|
   site.config['title'] ||= File.basename(site.source)
   site.config = site.config
 
-  site.config['collections']['comics'] = {
-    'output' => true,
-    'permalink' => '/:collection/:slug.html'
-  }
-  site.config['collections']['posts'] = {
-    'output' => true,
-    'permalink' => '/blogarchive/:slug.html'
-  }
+  setup_collection site, :comics, '/:collection/:slug.html', layout: 'comic-page', chapter: '0'
+  setup_collection site, :posts, '/blogarchive/:slug.html', layout: 'blog-display'
+  setup_collection site, :chapters, '/archive/:slug/', layout: 'archive'
 
   site.config['defaults'].prepend({
     'scope' => {
@@ -33,28 +49,6 @@ Jekyll::Hooks.register :site, :after_init do |site|
     },
     'values' => {
       'author' => Etc.getlogin,
-    }
-  })
-
-  site.config['defaults'].prepend({
-    'scope' => {
-      'path' => '',
-      'type' => 'comics',
-    },
-    'values' => {
-      'permalink' => '/:collection/:slug.html',
-      'layout' => 'comic-page',
-    },
-  })
-
-  site.config['defaults'].prepend({
-    'scope' => {
-      'path' => '',
-      'type' => 'posts',
-    },
-    'values' => {
-      'layout' => 'blog-display',
-      'permalink' => '/blogarchive/:slug.html',
     }
   })
 end
@@ -68,7 +62,7 @@ end
 
 # The index for the site can be set by configuration
 class FrontpageGenerator < Jekyll::Generator
-  priority :low
+  priority :lowest
 
   def generate site
     comics = site.collections['comics']

@@ -8,12 +8,14 @@ Jekyll::Hooks.register :comics, :pre_render do |page, payload|
   payload.merge! RageRender::ComicDrop.new(page).to_liquid
 end
 
-SPECIAL_COMIC_SLUGS = %w{frontpage index}
-
 module RageRender
+  SPECIAL_COMIC_SLUGS = %w{frontpage index}
+
   # Creates comics for each file found in the 'images' directory
   # that does not already have an associated comic object.
   class ComicFromImageGenerator < Jekyll::Generator
+    priority :highest
+
     def generate site
       images = site.static_files.select {|f| f.relative_path.start_with? '/images' }.map {|f| [f.basename, f] }.to_h
       comics = site.collections['comics'].docs.map {|c| [c.basename_without_ext, c] }.to_h
@@ -34,7 +36,7 @@ module RageRender
 
   # The index for the comics collection is always the latest comic.
   class LatestComicGenerator < Jekyll::Generator
-    priority :low
+    priority :lowest
 
     def generate site
       comics = site.collections['comics']
@@ -46,6 +48,8 @@ module RageRender
   end
 
   class DefaultImageSetter < Jekyll::Generator
+    priority :normal
+
     def generate site
       site.collections['comics'].docs.each do |comic|
         comic.data['image'] ||= default_image_path(comic)
@@ -57,6 +61,20 @@ module RageRender
     end
   end
 
+  # If the image for this comic was inside a subdirectory, set that subdirectory
+  # name to be the chapter slug for this comic, if one is not already set.
+  class ChapterFromDirectorySetter < Jekyll::Generator
+    priority :low
+
+    def generate site
+      site.collections['comics'].docs.each do |comic|
+        components = Pathname.new(comic.data['image']).descend.reduce([]) {|acc, path| acc << path.basename }
+        chapter_slug = components.drop_while {|path| path.root? || path.to_s == 'images' }[...-1].first
+        comic.data['chapter'] ||= chapter_slug.to_s unless chapter_slug.nil?
+      end
+    end
+  end
+
   class ComicDrop < Jekyll::Drops::DocumentDrop
     extend NamedDataDelegator
 
@@ -64,7 +82,6 @@ module RageRender
 
     delegate_method_as :id, :comicid
     def_data_delegator :title, :comictitle
-    def_data_delegator :chapter, :chaptername
     def_delegator :@obj, :url, :comicurl
 
     def posttime
@@ -77,6 +94,14 @@ module RageRender
 
     def haschapter
       @obj.data.include? 'chapter'
+    end
+
+    def chaptername
+      chapter.data['title']
+    end
+
+    def chapterlink
+      chapter.url
     end
 
     def dropdown
@@ -182,6 +207,10 @@ module RageRender
     private
     def all_comics
       @obj.collection.docs.reject {|c| SPECIAL_COMIC_SLUGS.include? c.data['slug'] }
+    end
+
+    def chapter
+      @obj.site.collections['chapters'].docs.detect {|c| c.data['slug'] == @obj.data['chapter'] }
     end
 
     def image_obj

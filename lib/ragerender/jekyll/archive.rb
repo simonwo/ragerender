@@ -4,7 +4,8 @@ require_relative 'comics'
 require_relative 'pagination'
 require_relative 'named_data_delegator'
 
-# Pass the right variables to archive pages.
+# Pass the right variables to archive pages. Note that this doesn't apply to
+# chapter pages because they are not "pages"
 Jekyll::Hooks.register :pages, :pre_render do |page, payload|
   if page.data['layout'] == 'archive'
     payload.merge! RageRender::ArchiveDrop.new(page).to_liquid
@@ -19,9 +20,7 @@ module RageRender
   class MainArchivePageGenerator < Jekyll::Generator
     def generate site
       archive = site.pages.detect {|page| page.data['layout'] == 'archive' && !page.data.include?('mode') }
-      archive.data['mode'] = if site.collections['comics'].docs.any? {|c| c.data.include? 'chapter' }
-        'chapters'
-      else
+      archive.data['mode'] = unless site.collections['comics'].docs.any? {|c| c.data.include? 'chapter' }
         'comics'
       end
     end
@@ -50,31 +49,13 @@ module RageRender
   # handle that pagination manually by calling another paginator for each page
   # we generate here.
   class ChapterArchiveGenerator < Jekyll::Generator
-    include PaginationGenerator
-
     priority :high
 
-    def source_page site
-      site.pages.detect {|page| page.data['layout'] == 'archive' }
-    end
-
-    def num_pages site
-      chapters(site).size
-    end
-
-    def permalink
-      '/archive/:number/index.html'
-    end
-
-    def handle_page page
-      page.data['mode'] = 'chapters'
-      page.data['chapter'] = chapters(page.site)[page.data['number'] - 1]
-      ChapterArchivePaginator.new(page).generate(page.site)
-    end
-
-    private
-    def chapters site
-      site.collections['comics'].docs.map {|c| c.data['chapter'] }.uniq.to_a
+    def generate site
+      site.collections['chapters'].docs.each do |page|
+        page.data['mode'] = 'chapters'
+        ChapterArchivePaginator.new(page).generate(site)
+      end
     end
   end
 
@@ -83,8 +64,8 @@ module RageRender
   class ChapterArchivePaginator
     include PaginationGenerator
 
-    def initialize page
-      @page = page
+    def initialize chapter
+      @page = chapter
     end
 
     def source_page site
@@ -93,12 +74,12 @@ module RageRender
 
     def num_pages site
       site.collections['comics'].docs.select do |c|
-        c.data['chapter'] == @page.data['chapter']
+        c.data['chapter'] == @page.data['slug']
       end.each_slice(COMICS_PER_PAGE).size
     end
 
     def permalink
-      File.expand_path File.join @page.permalink, '../', 'page/:number/index.html'
+      Pathname.new(@page.permalink).join('../').join('page/:number/index.html').to_path
     end
   end
 
@@ -107,27 +88,23 @@ module RageRender
     private delegate_method_as :data, :fallback_data
     extend NamedDataDelegator
 
-    def_data_delegator :chapter, :chaptername
-
     def ischapterarchive
-      @obj.data.include? 'chapter'
+      @obj.type == :chapters
     end
 
     def show_comic_list
-      ischapterarchive
+      ischapterarchive || @obj.data['mode'] == 'comics'
     end
 
     def show_chapter_overview
-      !ischapterarchive
+      !show_comic_list
     end
 
     def chapters
-      @obj.site.pages.select do |page|
-        page.data['layout'] == 'archive' &&
-        page.data.include?('chapter') &&
-        page.permalink =~ /archive\/[0-9]+\/index.html$/
-      end.map do |page|
-        ChapterDrop.new(page).to_liquid
+      unless show_chapter_overview
+        @obj.site.collections['chapters'].docs.map do |page|
+          ChapterDrop.new(page).to_liquid
+        end
       end
     end
 
@@ -140,12 +117,12 @@ module RageRender
       end.group_by {|c| c.data['chapter'] }
 
       comics.map do |chapter, comics|
-        chapter_data = chapters.detect {|c| c['chaptername'] == chapter } || default_chapter
+        chapter_data = ChapterDrop.new(@obj.site.collections['chapters'].docs.detect {|c| c.data['slug'] == chapter })
         comics.each_with_index.map do |comic, index|
           drop = ComicDrop.new(comic)
           {
             **ComicDrop::PAGINATION_FIELDS.map {|field| [field, drop[field]] }.to_h,
-            **chapter_data,
+            **ChapterDrop::PAGINATION_FIELDS.map {|field| [field, chapter_data[field]] }.to_h,
             'number' => index + 1,
             'newchapter' => index == 0,
             'chapterend' => index == comics.size - 1,
@@ -160,76 +137,11 @@ module RageRender
 
     private
     def selected_comics
-      comics = @obj.site.collections['comics'].docs
-      if @obj.data['chapter']
-        comics = comics.select {|c| c.data['chapter'] == @obj.data['chapter'] }
+      comics = @obj.site.collections['comics'].docs.reject {|c| SPECIAL_COMIC_SLUGS.include? c.data['slug'] }
+      if @obj.type == :chapters
+        comics = comics.select {|c| c.data['chapter'] == @obj.data['slug'] }
       end
       comics.each_slice(COMICS_PER_PAGE)
-    end
-
-    def default_chapter # TODO this should be a config default, chapters should be a custom object + generator
-      {
-        'chaptername' => 'Unchaptered',
-        'chapterdescription' => 'These comic pages are not part of any chapter',
-      }
-    end
-  end
-
-  class ChapterDrop < Jekyll::Drops::Drop
-    COVER_MAX_HEIGHT = 420
-    COVER_MAX_WIDTH = 300
-
-    delegate_method_as :data, :fallback_data
-    extend NamedDataDelegator
-    extend Forwardable
-
-    def_data_delegator :chapter, :chaptername
-    def_data_delegator :description, :chapterdescription
-    def_delegator :@obj, :url, :chapterarchiveurl
-
-    def cover
-      cover_obj.url
-    end
-
-    def cover_width_small
-      if (cover_height.to_f / COVER_MAX_HEIGHT) > (cover_width.to_f / COVER_MAX_WIDTH)
-        (cover_height_small * cover_width) / cover_height
-      else
-        [COVER_MAX_WIDTH, cover_width].min
-      end
-    end
-
-    def cover_height_small
-      if (cover_height.to_f / COVER_MAX_HEIGHT) > (cover_width.to_f / COVER_MAX_WIDTH)
-        [COVER_MAX_HEIGHT, cover_height].min
-      else
-        (cover_width_small * cover_height) / cover_width
-      end
-    end
-
-    def firstcomicinchapter
-      first_comic&.url
-    end
-
-    private
-    def cover_width
-      cover_obj.data['width'] ||= Dimensions.width cover_obj.path
-    end
-
-    def cover_height
-      cover_obj.data['height'] ||= Dimensions.height cover_obj.path
-    end
-
-    def cover_obj
-      @cover_obj ||= @obj.site.static_files.detect {|f| f.relative_path == cover_relative_path }
-    end
-
-    def cover_relative_path
-      Pathname.new('/').join(@obj.data['image'] || first_comic.data['image']).to_s
-    end
-
-    def first_comic
-      @obj.site.collections['comics'].docs.select {|c| c.data['chapter'] == chaptername }.first
     end
   end
 end
