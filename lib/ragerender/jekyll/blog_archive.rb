@@ -1,6 +1,8 @@
+require 'jekyll/generator'
 require 'jekyll/drops/drop'
 require 'jekyll/drops/document_drop'
 require_relative '../date_formats'
+require_relative 'pagination'
 require_relative 'named_data_delegator'
 
 # Pass the right variables to blog archive pages.
@@ -13,33 +15,39 @@ end
 module RageRender
   BLOGS_PER_PAGE = 15
 
-  def self.duplicate_page page, path
-    site = page.site
-    dupe = Jekyll::Page.new(site, page.instance_variable_get(:"@base"), page.instance_variable_get(:"@dir"), page.name)
-    dupe.instance_variable_set(:"@destination", {site.dest => path})
-    dupe
-  end
-
   # Creates each page of the blog archive by copying the root blog page and
   # updating the page number. Blog archive pages are available under both
   # '/blog' and '/blogarchive'.
   class PaginatedBlogsGenerator < Jekyll::Generator
-    def generate site
-      archive = site.pages.detect {|page| page['layout'] == 'blog-archive' }
-      archive.data['number'] = 1
+    include PaginationGenerator
 
-      pages = site.posts.docs.each_slice(BLOGS_PER_PAGE).size
-      pages.times.each do |number|
-        path = File.absolute_path File.join archive.destination(site.dest), '../page', (number+1).to_s, 'index.html'
-        paged_archive = RageRender.duplicate_page archive, path
-        paged_archive.data['number'] = number + 1
-        site.pages << paged_archive
+    def source_page site
+      site.pages.detect {|page| page['layout'] == 'blog-archive' }
+    end
 
-        path = File.absolute_path File.join archive.destination(site.dest), '../../blogarchive/page', (number+1).to_s, 'index.html'
-        paged_blogarchive = RageRender.duplicate_page archive, path
-        paged_blogarchive.data['number'] = number + 1
-        site.pages << paged_blogarchive
-      end
+    def num_pages site
+      site.posts.docs.each_slice(BLOGS_PER_PAGE).size
+    end
+
+    def permalink
+      '/blog/page/:number/index.html'
+    end
+  end
+
+  # As above.
+  class PaginatedBlogArchiveGenerator < Jekyll::Generator
+    include PaginationGenerator
+
+    def source_page site
+      site.pages.detect {|page| page['layout'] == 'blog-archive' }
+    end
+
+    def num_pages site
+      site.posts.docs.each_slice(BLOGS_PER_PAGE).size
+    end
+
+    def permalink
+      '/blogarchive/page/:number/index.html'
     end
   end
 

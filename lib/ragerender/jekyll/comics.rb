@@ -60,9 +60,16 @@ module RageRender
   class ComicDrop < Jekyll::Drops::DocumentDrop
     extend NamedDataDelegator
 
+    PAGINATION_FIELDS = %w[ comicurl comictitle posttime ]
+
     delegate_method_as :id, :comicid
     def_data_delegator :title, :comictitle
     def_data_delegator :chapter, :chaptername
+    def_delegator :@obj, :url, :comicurl
+
+    def posttime
+      comicfury_date(@obj.date)
+    end
 
     def usechapters
       all_comics.any? {|comic| comic.data.include? 'chapter' }

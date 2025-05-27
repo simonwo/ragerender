@@ -34,7 +34,7 @@ describe ComicFromImageGenerator.name do
     _(@site.collections['comics'].docs.size).must_equal 1
     comic = @site.collections['comics'].docs.first
     _(comic.data['title']).must_equal 'My comic'
-    _(comic.data['image']).must_equal nil
+    _(comic.data['image']).must_be_nil
   end
 
   it 'matches comics that set image files explicitly' do

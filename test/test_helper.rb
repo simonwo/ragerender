@@ -3,7 +3,7 @@ $LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
 require "minitest/autorun"
 require 'jekyll'
 
-class FakeSite < Struct.new :config, :collections, :static_files
+class FakeSite < Struct.new :config, :collections, :static_files, :pages
   def add_collection label
     self.collections ||= {}
     self.collections[label] = Jekyll::Collection.new(self, label)
@@ -22,6 +22,15 @@ class FakeSite < Struct.new :config, :collections, :static_files
     self.collections['comics'].docs << comic
   end
 
+  def add_page base, dir, name, **data
+    page = Jekyll::Page.new(self, base, dir, name)
+    page.data.merge! data
+    self.pages << page
+  end
+
   def collections_path; ''; end
   def frontmatter_defaults; Jekyll::FrontmatterDefaults.new(self); end
+  def in_source_dir *path; path.join('/'); end
+  def in_theme_dir *path; path.join('/'); end
+  def file_read_opts; {encoding: 'utf-8'}; end
 end
