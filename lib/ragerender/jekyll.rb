@@ -6,11 +6,13 @@ require_relative 'language'
 require_relative 'to_liquid'
 require_relative 'date_formats'
 require_relative 'jekyll/archive'
+require_relative 'jekyll/blog'
 require_relative 'jekyll/blog_archive'
 require_relative 'jekyll/comics'
 require_relative 'jekyll/chapter'
 require_relative 'jekyll/overview'
 require_relative 'jekyll/error'
+require_relative 'jekyll/named_data_delegator'
 
 def setup_collection site, label, permalink, **kwargs
   site.config['collections'][label.to_s] = {
@@ -62,7 +64,7 @@ Jekyll::Hooks.register :site, :post_read do |site|
 end
 
 # The index for the site can be set by configuration
-class FrontpageGenerator < Jekyll::Generator
+class RageRender::FrontpageGenerator < Jekyll::Generator
   priority :lowest
 
   def generate site
@@ -93,52 +95,88 @@ class FrontpageGenerator < Jekyll::Generator
   end
 end
 
-Jekyll::Hooks.register :posts, :pre_render do |post, payload|
-  payload['blogtitle'] = post.data['title']
-  payload['authorname'] = post.data['author']
-  payload['blog'] = post.content
-
-  site = post.site
-  is_first = site.posts.docs.first == post
-  is_last = site.posts.docs.last == post
-  payload['prevbloglink'] = is_first ? nil : site.posts.docs.each_cons(2).detect {|prev, this| this == post }.first.url
-  payload['nextbloglink'] = is_last ? nil : site.posts.docs.each_cons(2).detect {|this, nexx| this == post }.last.url
+Jekyll::Hooks.register :documents, :pre_render do |doc, payload|
+  payload.merge! RageRender::WebcomicDrop.new(doc).to_liquid
 end
 
-Jekyll::Hooks.register :documents, :pre_render do |doc, payload|
-  site = doc.site
-  %w{bannerads copyrights allowratings showpermalinks showcomments allowcomments}.each do |var|
-    payload[var] = site.config[var] || nil
+Jekyll::Hooks.register :pages, :pre_render do |page, payload|
+  payload.merge! RageRender::WebcomicDrop.new(page).to_liquid
+end
+
+class RageRender::WebcomicDrop < Jekyll::Drops::Drop
+  extend Forwardable
+  extend RageRender::NamedDataDelegator
+
+  def self.def_config_delegator source, target
+    define_method(target) { @obj.site.config[source.to_s] }
   end
 
-  payload['webcomicurl'] = site.baseurl
-  if site.config['banner']
-    payload['banner'] = (site.baseurl || '') + site.config['banner']
+  def_config_delegator :title, :webcomicname
+  def_config_delegator :description, :webcomicslogan
+  %w{bannerads allowratings showpermalinks showcomments allowcomments}.each do |var|
+    def_config_delegator var, var
   end
-  if site.config['webcomicavatar']
-    payload['webcomicavatar'] = (site.baseurl || '') + site.config['webcomicavatar']
-  end
-  payload['banneradcode'] = ''
-  payload['webcomicname'] = site.config['title']
-  payload['webcomicslogan'] = site.config['description']
-  payload['hasblogs'] = site.posts.docs.any?
-  payload['hidefromhost'] = false
-  payload['extrapages'] = site.pages.reject {|page| page.data['hidden'] }.map do |page|
-    {'link' => page.url, 'title' => page.data['title']}
-  end
-  payload['cfscriptcode'] = '<script type="text/javascript">function jumpTo(place) { window.location = place; }</script>'
-  payload['css'] = site.static_files.select {|f| f.extname == '.css'}.map do |f|
-    File.read f.path
-  end.join
 
-  %w{rating votecount}.each do |var|
-    payload[var] = doc.data[var] || nil
+  def webcomicurl
+    @obj.site.baseurl
   end
-  payload['pagetitle'] = doc.data['title']
 
-  payload['posttime'] = comicfury_date(doc.date)
-  payload['iscomicpage'] = doc.collection.label == 'comics'
-  payload['isextrapage'] = doc.is_a?(Jekyll::Page)
-  payload['lastupdatedmy'] = Time.now.strftime('%d/%m/%Y')
-  payload['permalink'] = doc.url
+  def lastupdatedmy
+    Time.now.strftime('%d/%m/%Y')
+  end
+
+  def copyrights
+    @obj.site.config['copyrights'].gsub('[year]', Date.today.year.to_s)
+  end
+
+  def banner
+    Pathname.new(@obj.site.baseurl || '/').join(@obj.site.config['banner'] || '').to_path
+  end
+
+  def webcomicavatar
+    Pathname.new(@obj.site.baseurl || '/').join(@obj.site.config['webcomicavatar'] || '').to_path
+  end
+
+  def hasblogs
+    @obj.site.posts.docs.any?
+  end
+
+  def hidefromhost
+    false
+  end
+
+  def extrapages
+    @obj.site.pages.reject {|page| page.data['hidden'] }.map do |page|
+      {'link' => page.url, 'title' => page.data['title']}
+    end
+  end
+
+  def cfscriptcode
+    <<~HTML
+      <script type="text/javascript">
+        function jumpTo(place) { window.location = place; }
+      </script>
+    HTML
+  end
+
+  def css
+    css_files = @obj.site.static_files.select {|f| f.extname == '.css'}.map(&:path).to_a
+    css_files << Pathname.new(@obj.site.theme.includes_path).join('layout.css') unless css_files.any?
+    css_files.map {|f| File.read f }.join
+  end
+
+  delegate_method_as :url, :permalink
+  def_data_delegator :title, :pagetitle
+
+  def iscomicpage
+    @obj.type == :comics
+  end
+
+  def isextrapage
+    @obj.type == :pages && @obj.data['hidden'] != true
+  end
+
+  def fallback_data
+    {}
+  end
 end

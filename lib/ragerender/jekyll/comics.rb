@@ -83,6 +83,8 @@ module RageRender
     delegate_method_as :id, :comicid
     def_data_delegator :title, :comictitle
     def_delegator :@obj, :url, :comicurl
+    data_delegator 'rating'
+    data_delegator 'votecount'
 
     def posttime
       comicfury_date(@obj.date)
