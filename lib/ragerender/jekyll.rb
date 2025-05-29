@@ -12,6 +12,7 @@ require_relative 'jekyll/comics'
 require_relative 'jekyll/chapter'
 require_relative 'jekyll/overview'
 require_relative 'jekyll/error'
+require_relative 'jekyll/search'
 require_relative 'jekyll/named_data_delegator'
 
 def setup_collection site, label, permalink, **kwargs
@@ -40,6 +41,7 @@ Jekyll::Hooks.register :site, :after_init do |site|
   # without requiring the user to write a config file
   site.config['theme'] ||= 'ragerender'
   site.config['title'] ||= File.basename(site.source)
+  site.config['search'] ||= true
   site.config = site.config
 
   setup_collection site, :comics, '/:collection/:slug/', layout: 'comic-page', chapter: '0'
@@ -113,6 +115,7 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
 
   def_config_delegator :title, :webcomicname
   def_config_delegator :description, :webcomicslogan
+  def_config_delegator :search, :searchon
   %w{bannerads allowratings showpermalinks showcomments allowcomments}.each do |var|
     def_config_delegator var, var
   end
