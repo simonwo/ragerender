@@ -44,7 +44,7 @@ Jekyll::Hooks.register :site, :after_init do |site|
   setup_collection site, :posts, '/blogarchive/:slug.html', layout: 'blog-display'
   setup_collection site, :chapters, '/archive/:slug/', layout: 'archive'
 
-  site.config['defaults'].prepend({
+  site.config['defaults'].push({
     'scope' => {
       'path' => '',
     },
