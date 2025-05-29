@@ -40,8 +40,8 @@ Jekyll::Hooks.register :site, :after_init do |site|
   site.config['title'] ||= File.basename(site.source)
   site.config = site.config
 
-  setup_collection site, :comics, '/:collection/:slug.html', layout: 'comic-page', chapter: '0'
-  setup_collection site, :posts, '/blogarchive/:slug.html', layout: 'blog-display'
+  setup_collection site, :comics, '/:collection/:slug/', layout: 'comic-page', chapter: '0'
+  setup_collection site, :posts, '/blogarchive/:slug/', layout: 'blog-display'
   setup_collection site, :chapters, '/archive/:slug/', layout: 'archive'
 
   site.config['defaults'].push({
