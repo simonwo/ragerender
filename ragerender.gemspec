@@ -20,9 +20,9 @@ Gem::Specification.new do |spec|
   nearest = git.call(:tag, '--list', version_tag, sort: 'version:refname').last || 'v0'
   spec.version = nearest[1..]
 
-  readme = (File.read('README.txt') rescue spec.name).split("\n")
-  spec.summary = readme.first
-  spec.description = readme[1..].join("\n").strip
+  readme = git.call(:show, 'HEAD:README.rdoc').split("\n\n").slice_before {|p| p =~ /^=+ / }.to_a
+  spec.summary = readme.first.drop(1).join(' ').gsub(/\n+/, ' ')
+  spec.description = readme[1..].flatten.join("\n\n").strip
   spec.homepage = git.call(:remote, :'get-url', 'origin').join
   spec.required_ruby_version = '>= 3.0.0'
 

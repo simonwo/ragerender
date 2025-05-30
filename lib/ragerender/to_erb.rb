@@ -22,10 +22,10 @@ module RageRender
         "<% if #{chunk.reversed ? 'not ' : ''} #{chunk.lhs.path.join('.')} #{chunk.operator} #{rhs} %>"
 
       when Language::Function
-        params = chunk.params map do |param|
+        params = chunk.params.map do |param|
           case param
           when Language::Variable
-            param
+            param.path.join('.')
           else
             "\"#{param}\""
           end
