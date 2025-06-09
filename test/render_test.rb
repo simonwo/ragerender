@@ -1,8 +1,10 @@
+require 'erb'
 require 'cgi/escape'
 require 'liquid'
 require_relative 'test_helper'
 require_relative '../lib/ragerender/language'
 require_relative '../lib/ragerender/to_liquid'
+require_relative '../lib/ragerender/to_erb'
 
 TESTS = {
   # literals
@@ -54,12 +56,33 @@ VARIABLES = {
   'array' => [{'value' => 'a'}, {'value' => 'b'}, {'value' => 'c'}],
 }
 
+class TestTemplate < Struct.new(*VARIABLES.keys.map(&:to_sym))
+  include CGI::Escape
+  alias js escapeHTML
+
+  V = Struct.new(:value)
+
+  def array
+    super.map {|h| V.new h['value'] }
+  end
+
+  def render input
+    erb = RageRender.to_erb(Language.parse StringIO.new(input)).join
+    template = ERB.new(erb)
+    template.result(binding)
+  end
+end
+
 describe 'Rendering' do
   TESTS.each do |input, output|
     it "renders #{input.inspect} into Liquid #{output.inspect}" do
       liquid = RageRender.to_liquid(Language.parse StringIO.new(input)).join
       template = Liquid::Template.parse liquid
       _(template.render(VARIABLES)).must_equal output
+    end
+
+    it "renders #{input.inspect} into ERB #{output.inspect}" do
+      _(TestTemplate.new(*VARIABLES.values).render(input)).must_equal output
     end
   end
 end
