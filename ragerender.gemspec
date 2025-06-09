@@ -3,7 +3,7 @@
 Gem::Specification.new do |spec|
   git = Proc.new do |*args, **flags, &block|
     args = args.push *flags.each_pair.map {|k, v| "--#{k.to_s.gsub(/_/, '-')}=#{v}" }
-    IO.popen(['git'].push(*args.map(&:to_s)), chdir: __dir__, err: STDERR) do |pipe|
+    IO.popen(['git'].push(*args.map(&:to_s)), external_encoding: 'UTF-8', chdir: __dir__, err: STDERR) do |pipe|
       unless block.nil?
         block.call(pipe)
       else
@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
   nearest = git.call(:tag, '--list', version_tag, sort: 'version:refname').last || 'v0'
   spec.version = nearest[1..]
 
-  readme = git.call(:show, 'HEAD:README.rdoc').split("\n\n").slice_before {|p| p =~ /^=+ / }.to_a
+  readme = git.call(:show, 'HEAD:README.rdoc') {|pipe| pipe.read() }.split("\n\n").slice_before {|p| p =~ /^=+ / }.to_a
   spec.summary = readme.first.drop(1).join(' ').gsub(/\n+/, ' ')
   spec.description = readme[1..].flatten.join("\n\n").strip
   spec.homepage = git.call(:remote, :'get-url', 'origin').join
@@ -28,7 +28,7 @@ Gem::Specification.new do |spec|
 
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = spec.homepage
-  spec.license = File.read('LICENSE', external_encoding: 'UTF-8').scan(/\(([A-Z]+)\)/).first.first rescue ''
+  spec.license = File.read('LICENSE', 'rt').scan(/\(([A-Z]+)\)/).first.first rescue ''
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
