@@ -1,11 +1,16 @@
 require_relative 'test_helper'
 require_relative '../lib/ragerender/jekyll/comics'
+include RageRender
 
 describe ComicFromImageGenerator.name do
   before do
-    @site = FakeSite.new({}, {}, [])
+    @site = FakeSite.new
     @site.add_collection 'posts'
     @site.add_collection 'comics'
+  end
+
+  after do
+    @site.teardown!
   end
 
   it 'only adds comics from images' do

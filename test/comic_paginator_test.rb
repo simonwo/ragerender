@@ -3,12 +3,16 @@ require_relative '../lib/ragerender/jekyll/archive'
 
 describe RageRender::ComicArchivePaginator.name do
   before do
-    @site = FakeSite.new({'strict_front_matter' => false}, {}, [], [])
+    @site = FakeSite.new({'strict_front_matter' => false})
     @site.add_collection 'comics'
     @site.add_page File.dirname(__FILE__), '../assets', 'archive-comics.html'
 
     _(@site.pages.size).must_equal 1
     @original = @site.pages.first
+  end
+
+  after do
+    @site.teardown!
   end
 
   it 'keeps the original page in place' do

@@ -3,7 +3,7 @@ require_relative '../lib/ragerender/jekyll/archive'
 
 describe RageRender::ChapterArchiveGenerator.name do
   before do
-    @site = FakeSite.new({}, {}, [], [])
+    @site = FakeSite.new
     @site.add_collection 'comics'
     @site.add_page File.dirname(__FILE__), '../assets', 'archive.html'
 
@@ -11,8 +11,12 @@ describe RageRender::ChapterArchiveGenerator.name do
     @original = @site.pages.first
   end
 
-  it 'generates one root page plus one numbered page per chapter' do
-    @site.add_comic '1.html', chatper: 'first'
+  after do
+    @site.teardown!
+  end
+
+  it 'generates one numbered page per chapter' do
+    @site.add_comic '1.html', chapter: 'first'
     @site.add_comic '2.html', chapter: 'second'
 
     RageRender::ChapterArchiveGenerator.new.generate @site
