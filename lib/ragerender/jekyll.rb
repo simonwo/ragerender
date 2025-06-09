@@ -14,26 +14,7 @@ require_relative 'jekyll/overview'
 require_relative 'jekyll/error'
 require_relative 'jekyll/search'
 require_relative 'jekyll/named_data_delegator'
-
-def setup_collection site, label, permalink, **kwargs
-  site.config['collections'][label.to_s] = {
-    'output' => true,
-    'permalink' => permalink,
-  }
-
-  site.config['defaults'].prepend({
-    'scope' => {
-      'path' => '',
-      'type' => label.to_s,
-    },
-    'values' => {
-      'permalink' => permalink,
-      **kwargs.map do |k, v|
-        [k.to_s, v]
-      end.to_h,
-    },
-  })
-end
+require_relative 'jekyll/setup_collection'
 
 Jekyll::Hooks.register :site, :after_init do |site|
   # This is obviously quite naughty for many reasons,
@@ -46,7 +27,6 @@ Jekyll::Hooks.register :site, :after_init do |site|
 
   setup_collection site, :comics, '/:collection/:slug/', layout: 'comic-page', chapter: '0'
   setup_collection site, :posts, '/blogarchive/:slug/', layout: 'blog-display'
-  setup_collection site, :chapters, '/archive/:slug/', layout: 'archive'
 
   site.config['defaults'].push({
     'scope' => {

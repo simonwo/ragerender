@@ -1,9 +1,13 @@
 require 'jekyll/generator'
 require 'jekyll/drops/document_drop'
+require_relative 'named_data_delegator'
+require_relative 'setup_collection'
 
 # Add default values for the 'unchapter' which is used to hold all comics that
 # don't have a chapter.
 Jekyll::Hooks.register :site, :after_init do |site|
+  setup_collection site, :chapters, '/archive/:slug/', layout: 'archive'
+
   site.config['defaults'].prepend({
     'scope' => {
       'path' => '_chapters/0.html',
@@ -32,6 +36,7 @@ module RageRender
       existing = Set.new(site.collections['chapters'].docs.map {|c| c.data['slug'] })
       missing = required - existing
       missing.each do |slug|
+        Jekyll.logger.debug 'Adding chapter:', slug
         filename = Pathname.new(site.collections['chapters'].relative_directory).join("#{slug}.html")
         chapter = Jekyll::Document.new(filename.to_path, site: site, collection: site.collections['chapters'])
         chapter.send(:merge_defaults)
