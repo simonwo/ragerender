@@ -28,7 +28,7 @@ module RageRender
     # PATH parses dotted paths: 'dotted.name' => ['dotted', 'name']
     PATH = IDENT.join('.'.r).even
 
-    OPERATOR = %w{= != ~ !~ < > <= >= % !%}.map(&:r).reduce {|a, b| a | b }
+    OPERATOR = %w{= != ~ !~ <= >= < > % !%}.map(&:r).reduce {|a, b| a | b }
 
     # VARIABLE parses names: 'v:name' => Variable.new(['name'])
     # VARIABLE parses dotted paths: 'v:dotted.name' => Variable.new(['dotted', 'name'])
@@ -39,6 +39,7 @@ module RageRender
     # CONDITIONAL tests for falsiness: 'c:!variable' => Conditional.new(true, Variable.new(['variable']), nil, nil)
     # CONDITIONAL tests for equality: 'c:variable=My comic about bees' => Conditional.new(false, Variable.new(['variable']), '=', 'My comic about bees')
     # CONDITIONAL tests for inequality: 'c:variable!=My comic about bees' => Conditional.new(false, Variable.new(['variable']), '!=', 'My comic about bees')
+    # CONDITIONAL tests for greater than: 'c:variable>=3' => Conditional.new(false, Variable.new(['variable']), '>=', '3')
     CONDITIONAL = ('c:'.r >> seq_(
       /!?/.r.map {|c| c == '!' },
       PATH.map {|p| Variable.new(p) },
