@@ -49,10 +49,10 @@ module RageRender
   # handle that pagination manually by calling another paginator for each page
   # we generate here.
   class ChapterArchiveGenerator < Jekyll::Generator
-    priority :high
+    priority :normal
 
     def generate site
-      site.collections['chapters'].docs.each do |page|
+      site.collections['chapters'].docs.to_a.dup.each do |page|
         page.data['mode'] = 'chapters'
         ChapterArchivePaginator.new(page).generate(site)
       end
@@ -72,6 +72,12 @@ module RageRender
       @page
     end
 
+    def duplicate original
+      page = Jekyll::Document.new(original.path, site: original.site, collection: original.collection)
+      page.merge_data! original.data, source: 'original document'
+      page
+    end
+
     def num_pages site
       site.collections['comics'].docs.select do |c|
         c.data['chapter'] == @page.data['slug']
@@ -79,7 +85,13 @@ module RageRender
     end
 
     def permalink
-      Pathname.new(@page.permalink).join('../').join('page/:number/index.html').to_path
+      path = Pathname.new(@page.url)
+      path = path.dirname unless @page.url.end_with?('/')
+      path.join('page/:number/index.html').to_path
+    end
+
+    def handle_page page
+      page.collection.docs << page
     end
   end
 
@@ -102,7 +114,9 @@ module RageRender
 
     def chapters
       unless show_chapter_overview
-        @obj.site.collections['chapters'].docs.map do |page|
+        @obj.site.collections['chapters'].docs.reject do |page|
+          page.data['hidden']
+        end.map do |page|
           ChapterDrop.new(page).to_liquid
         end
       end

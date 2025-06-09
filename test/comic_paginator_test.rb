@@ -5,10 +5,11 @@ describe RageRender::ComicArchivePaginator.name do
   before do
     @site = FakeSite.new({'strict_front_matter' => false})
     @site.add_collection 'comics'
-    @site.add_page File.dirname(__FILE__), '../assets', 'archive-comics.html'
-
-    _(@site.pages.size).must_equal 1
+    @site.add_page File.join(File.dirname(__FILE__), '../'), 'assets', 'archive-comics.html'
     @original = @site.pages.first
+    @site.add_page File.join(File.dirname(__FILE__), '../'), 'assets', 'archive.html'
+
+    _(@site.pages.size).must_equal 2
   end
 
   after do
@@ -19,7 +20,7 @@ describe RageRender::ComicArchivePaginator.name do
     @site.add_comic '1.html'
 
     RageRender::ComicArchivePaginator.new.generate(@site)
-    _(@site.pages.size).must_equal 2
+    _(@site.pages.size).must_equal 3
     _(@site.pages).must_include @original
   end
 
@@ -27,10 +28,10 @@ describe RageRender::ComicArchivePaginator.name do
     RageRender::COMICS_PER_PAGE.times {|i| @site.add_comic "#{i}.html" }
 
     RageRender::ComicArchivePaginator.new.generate(@site)
-    _(@site.pages.size).must_equal 2
+    _(@site.pages.size).must_equal 3
     _(@site.pages).must_include @original
 
-    new = @site.pages.detect {|p| p != @original }
+    new = @site.pages.detect {|p| p != @original && !p.data['mode'].nil? }
     _(new.data['number']).must_equal 1
     _(@original.data['number']).must_equal 1
   end
@@ -39,10 +40,10 @@ describe RageRender::ComicArchivePaginator.name do
     (2 * RageRender::COMICS_PER_PAGE).times {|i| @site.add_comic "#{i}.html" }
 
     RageRender::ComicArchivePaginator.new.generate(@site)
-    _(@site.pages.size).must_equal 3
+    _(@site.pages.size).must_equal 4
     _(@site.pages).must_include @original
 
-    numbers = @site.pages.select {|p| p != @original }.map {|c| c.data['number']}
+    numbers = @site.pages.select {|p| p != @original && !p.data['mode'].nil? }.map {|c| c.data['number']}
     _(numbers.sort).must_equal [1, 2]
   end
 end
