@@ -2,6 +2,7 @@ def setup_collection site, label, permalink, **kwargs
   site.config['collections'][label.to_s] = {
     'output' => true,
     'permalink' => permalink,
+    'sort_by' => 'date',
   }
 
   site.config['defaults'].prepend({

@@ -63,15 +63,15 @@ class RageRender::FrontpageGenerator < Jekyll::Generator
       collection = site.collections['comics'].docs
       chapter = comics.docs.last.data['chapter']
       comics.docs.detect {|c| c.data['chapter'] == chapter }
-    when 'overview'
+    when 'blog', 'archive', 'overview'
       collection = site.pages
-      site.pages.detect {|p| p.data["permalink"] == '/overview/index.html' }
+      site.pages.detect {|p| p.data["permalink"] == "/#{frontpage}/index.html" }
     else
       collection = site.pages
       site.pages.detect {|p| p.data["slug"] == frontpage }
     end.dup
-    index.instance_variable_set(:"@destination", {site.dest => File.join(site.dest, 'index.html')})
     index.instance_variable_set(:"@data", index.data.dup)
+    index.data['permalink'] = '/index.html'
     index.data['slug'] = 'frontpage'
     collection << index
   end

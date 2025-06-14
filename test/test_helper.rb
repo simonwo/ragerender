@@ -35,8 +35,10 @@ class FakeSite < Jekyll::Site
 
   def add_page base, dir, name, **data
     source_dir = Pathname.new(@source).join(dir).cleanpath
-    FileUtils.mkdir_p(source_dir.to_path)
-    FileUtils.cp(File.join(base, dir, name), source_dir.join(name).to_path)
+    unless File.join(base, dir, name) == source_dir.join(name).to_path
+      FileUtils.mkdir_p(source_dir.to_path)
+      FileUtils.cp(File.join(base, dir, name), source_dir.join(name).to_path)
+    end
     page = Jekyll::Page.new(self, @source, dir, name)
     page.data.merge! data
     @pages << page

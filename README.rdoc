@@ -175,6 +175,20 @@ that and more with optional Front Matter:
   ---
   <h1>yo check out my bonus content!</h1>
 
+=== Controlling the front page
+
+As on ComicFury you have a few options for setting the front page of you site.
+You control this by setting a <tt>frontpage</tt> key in your site config.
+
+- <tt>latest</tt> will display the latest comic (also the default)
+- <tt>first</tt> will display the first comic
+- <tt>chapter</tt> will display the first comic in the latest chapter
+- <tt>blog</tt> will display the list of blog posts
+- <tt>archive</tt> will display the comic archive
+- <tt>overview</tt> will display the comic overview (blogs and latest page)
+- anything else will display the extra page that has the matching
+  <tt>slug</tt> in its Front Matter
+
 === Stuff that doesn't work
 
 Here is a probably incomplete list of things you can expect to be different
