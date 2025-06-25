@@ -98,6 +98,12 @@ module RageRender
       end
     end
   end
+
+  module LiquidFilters
+    def random a, b
+      rand a..b
+    end
+  end
 end
 
 if __FILE__ == $0

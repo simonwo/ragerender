@@ -1,3 +1,4 @@
+require 'cgi/escape'
 require_relative 'language'
 
 module RageRender
@@ -89,6 +90,16 @@ module RageRender
       when Language::EndTag
         '<% end %>'
       end
+    end
+  end
+
+  # Include this module to get ComicFury intrinsic functions available in ERB.
+  module ERBHelpers
+    include CGI::Escape
+    alias js escapeHTML
+
+    def random a, b
+      rand a..b
     end
   end
 end

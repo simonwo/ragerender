@@ -39,6 +39,7 @@ Jekyll::Hooks.register :site, :after_init do |site|
 end
 
 Jekyll::Hooks.register :site, :post_read do |site|
+  Liquid::Template.register_filter(RageRender::LiquidFilters)
   site.layouts.each do |(name, layout)|
     layout.data['layout'] = 'overall' unless name == 'overall'
     layout.content = RageRender.to_liquid(RageRender::Language.parse(StringIO.new(layout.content))).join

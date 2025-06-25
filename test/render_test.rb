@@ -1,5 +1,4 @@
 require 'erb'
-require 'cgi/escape'
 require 'liquid'
 require_relative 'test_helper'
 require_relative '../lib/ragerender/language'
@@ -47,6 +46,8 @@ TESTS = {
   '[l:array][v:l.aiteration][/]' => '123',
   '[l:array][c:l.is_first][v:l.value][/][/]' => 'a',
   '[l:array][c:l.is_last][v:l.value][/][/]' => 'c',
+  # random
+  '[f:random|1|3]' => /^(1|2|3)$/,
 }
 
 VARIABLES = {
@@ -57,8 +58,7 @@ VARIABLES = {
 }
 
 class TestTemplate < Struct.new(*VARIABLES.keys.map(&:to_sym))
-  include CGI::Escape
-  alias js escapeHTML
+  include RageRender::ERBHelpers
 
   V = Struct.new(:value)
 
@@ -74,15 +74,24 @@ class TestTemplate < Struct.new(*VARIABLES.keys.map(&:to_sym))
 end
 
 describe 'Rendering' do
+  before do
+    Liquid::Template.error_mode = :strict
+    Liquid::Template.register_filter(RageRender::LiquidFilters)
+  end
+
   TESTS.each do |input, output|
+    if output.is_a? String
+      output = /^(#{output})$/
+    end
+
     it "renders #{input.inspect} into Liquid #{output.inspect}" do
       liquid = RageRender.to_liquid(Language.parse StringIO.new(input)).join
       template = Liquid::Template.parse liquid
-      _(template.render(VARIABLES)).must_equal output
+      _(template.render!(VARIABLES, strict_filters: true)).must_match output
     end
 
     it "renders #{input.inspect} into ERB #{output.inspect}" do
-      _(TestTemplate.new(*VARIABLES.values).render(input)).must_equal output
+      _(TestTemplate.new(*VARIABLES.values).render(input)).must_match output
     end
   end
 end
