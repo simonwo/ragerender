@@ -6,7 +6,6 @@ module RageRender
     'subtract' => 'minus',
     'multiply' => 'times',
     'divide' => 'divided_by',
-    'js' => 'escape', # TODO: check these do the same thing!
   }
 
   def self.render_value value
@@ -96,12 +95,6 @@ module RageRender
           "{% #{tag_stack.pop.to_s} %}"
         end
       end
-    end
-  end
-
-  module LiquidFilters
-    def random a, b
-      rand a..b
     end
   end
 end

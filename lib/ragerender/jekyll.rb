@@ -3,6 +3,7 @@ require 'stringio'
 require 'jekyll'
 require 'dimensions'
 require_relative 'language'
+require_relative 'functions'
 require_relative 'to_liquid'
 require_relative 'date_formats'
 require_relative 'jekyll/archive'
@@ -39,7 +40,7 @@ Jekyll::Hooks.register :site, :after_init do |site|
 end
 
 Jekyll::Hooks.register :site, :post_read do |site|
-  Liquid::Template.register_filter(RageRender::LiquidFilters)
+  Liquid::Template.register_filter(RageRender::TemplateFunctions)
   site.layouts.each do |(name, layout)|
     layout.data['layout'] = 'overall' unless name == 'overall'
     layout.content = RageRender.to_liquid(RageRender::Language.parse(StringIO.new(layout.content))).join

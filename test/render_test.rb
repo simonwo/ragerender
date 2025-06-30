@@ -2,6 +2,7 @@ require 'erb'
 require 'liquid'
 require_relative 'test_helper'
 require_relative '../lib/ragerender/language'
+require_relative '../lib/ragerender/functions'
 require_relative '../lib/ragerender/to_liquid'
 require_relative '../lib/ragerender/to_erb'
 
@@ -17,7 +18,7 @@ TESTS = {
   '[f:subtract|v:three|2]' => '1',
   '[f:multiply|2|v:three]' => '6',
   '[f:divide|18|v:three]' => '6',
-  '[f:js|v:code]' => '&lt;br/&gt;',
+  '[f:js|v:code]' => '"&lt;br/&gt;"',
   # comparisons
   '[c:three=3]pass[/]' => 'pass',
   '[c:three=4]fail[/]' => '',
@@ -58,7 +59,7 @@ VARIABLES = {
 }
 
 class TestTemplate < Struct.new(*VARIABLES.keys.map(&:to_sym))
-  include RageRender::ERBHelpers
+  include RageRender::TemplateFunctions
 
   V = Struct.new(:value)
 
@@ -76,7 +77,7 @@ end
 describe 'Rendering' do
   before do
     Liquid::Template.error_mode = :strict
-    Liquid::Template.register_filter(RageRender::LiquidFilters)
+    Liquid::Template.register_filter(RageRender::TemplateFunctions)
   end
 
   TESTS.each do |input, output|
@@ -84,13 +85,13 @@ describe 'Rendering' do
       output = /^(#{output})$/
     end
 
-    it "renders #{input.inspect} into Liquid #{output.inspect}" do
+    it "renders #{input.inspect} using Liquid into #{output.inspect}" do
       liquid = RageRender.to_liquid(Language.parse StringIO.new(input)).join
       template = Liquid::Template.parse liquid
       _(template.render!(VARIABLES, strict_filters: true)).must_match output
     end
 
-    it "renders #{input.inspect} into ERB #{output.inspect}" do
+    it "renders #{input.inspect} using ERB into #{output.inspect}" do
       _(TestTemplate.new(*VARIABLES.values).render(input)).must_match output
     end
   end
