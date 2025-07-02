@@ -40,6 +40,7 @@ module RageRender
     # CONDITIONAL tests for equality: 'c:variable=My comic about bees' => Conditional.new(false, Variable.new(['variable']), '=', 'My comic about bees')
     # CONDITIONAL tests for inequality: 'c:variable!=My comic about bees' => Conditional.new(false, Variable.new(['variable']), '!=', 'My comic about bees')
     # CONDITIONAL tests for greater than: 'c:variable>=3' => Conditional.new(false, Variable.new(['variable']), '>=', '3')
+    # CONDITIONAL tests against two variables: 'c:variable=v:other' => Conditional.new(false, Variable.new(['variable']), '=', Variable.new(['other']))
     CONDITIONAL = ('c:'.r >> seq_(
       /!?/.r.map {|c| c == '!' },
       PATH.map {|p| Variable.new(p) },

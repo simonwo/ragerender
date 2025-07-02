@@ -32,6 +32,8 @@ TESTS = {
   '[c:three<3]fail[/]' => '',
   '[c:three<=3]pass[/]' => 'pass',
   '[c:three<=2]fail[/]' => '',
+  '[c:three=v:three]pass[/]' => 'pass',
+  '[c:three!=v:three]fail[/]' => '',
   # case insensitive
   '[c:title~ragerender]pass[/]' => 'pass',
   '[c:title~magemender]fail[/]' => '',
