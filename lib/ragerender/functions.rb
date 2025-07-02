@@ -8,7 +8,7 @@ module RageRender
       '"' + CGI.escape_html(str) + '"'
     end
 
-    def random a, b
+    def randomnumber a, b
       rand a..b
     end
   end

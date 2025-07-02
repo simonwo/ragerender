@@ -48,7 +48,7 @@ TESTS = {
   '[l:array][c:l.is_first][v:l.value][/][/]' => 'a',
   '[l:array][c:l.is_last][v:l.value][/][/]' => 'c',
   # random
-  '[f:random|1|3]' => /^(1|2|3)$/,
+  '[f:randomnumber|1|3]' => /^(1|2|3)$/,
 }
 
 VARIABLES = {
