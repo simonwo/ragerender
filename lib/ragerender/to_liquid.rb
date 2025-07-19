@@ -6,6 +6,7 @@ module RageRender
     'subtract' => 'minus',
     'multiply' => 'times',
     'divide' => 'divided_by',
+    'removehtmltags' => 'strip_html',
   }
 
   def self.render_value value

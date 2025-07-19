@@ -18,7 +18,8 @@ TESTS = {
   '[f:subtract|v:three|2]' => '1',
   '[f:multiply|2|v:three]' => '6',
   '[f:divide|18|v:three]' => '6',
-  '[f:js|v:code]' => '"&lt;br/&gt;"',
+  '[f:js|v:code]' => "\"Some words&lt;br/&gt;\n\nSome more words&lt;script&gt;some code&lt;/script&gt;\"",
+  '[f:removehtmltags|v:code]' => "Some words\n\nSome more words",
   # comparisons
   '[c:three=3]pass[/]' => 'pass',
   '[c:three=4]fail[/]' => '',
@@ -56,7 +57,7 @@ TESTS = {
 VARIABLES = {
   'three' => 3,
   'title' => 'RageRender',
-  'code'  => '<br/>',
+  'code'  => "Some words<br/>\n\nSome more words<script>some code</script>",
   'array' => [{'value' => 'a'}, {'value' => 'b'}, {'value' => 'c'}],
 }
 
