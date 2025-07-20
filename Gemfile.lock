@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    ragerender (0.1.3)
+    ragerender (0.1.4)
       dimensions (~> 1.3)
       rsec (~> 1)
 
