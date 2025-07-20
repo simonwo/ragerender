@@ -20,7 +20,7 @@ module RageRender
         elsif chunk.path == ['l', 'iteration']
           '<%= index %>'
         else
-          "<%= #{chunk.path.join('.')} rescue nil %>"
+          "<%= #{chunk.path.join('.')}.to_s.gsub(/'/, '&#039;').gsub(/\"/, '&quot;') rescue nil %>"
         end
 
       when Language::Conditional
@@ -76,7 +76,17 @@ module RageRender
 
         if ERB_OPERATORS.include? chunk.name
           "<%= #{params.join(ERB_OPERATORS[chunk.name])} %>"
+        elsif chunk.name == 'rawhtml'
+          "<%= #{params.first} %>"
         else
+          params = params.zip(chunk.params).map do |param, old_param|
+            case old_param
+            when Language::Variable
+              param + ".to_s.gsub(/'/, '&#039;').gsub(/\"/, '&quot;')"
+            else
+              param
+            end
+          end
           "<%= #{chunk.name}(#{params.join(', ')}) %>"
         end
 

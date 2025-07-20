@@ -9,7 +9,7 @@ module RageRender
     end
 
     def randomnumber a, b
-      rand a..b
+      rand a.to_i..b.to_i
     end
 
     # https://github.com/Shopify/liquid/blob/9bb7fbf123e6e2bd61e00189b1c83159f375d3f3/lib/liquid/standardfilters.rb#L24-L29

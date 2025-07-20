@@ -20,6 +20,12 @@ TESTS = {
   '[f:divide|18|v:three]' => '6',
   '[f:js|v:code]' => "\"Some words&lt;br/&gt;\n\nSome more words&lt;script&gt;some code&lt;/script&gt;\"",
   '[f:removehtmltags|v:code]' => "Some words\n\nSome more words",
+  # escaping: # comicfury will escape entities in variables except when using rawhtml
+  '[v:text]' => 'Text with &#039;apostrophes&#039; and &quot;quotes&quot;',
+  '[f:removehtmltags|v:text]' => 'Text with &#039;apostrophes&#039; and &quot;quotes&quot;',
+  '[f:rawhtml|v:text]' => 'Text with \'apostrophes\' and "quotes"',
+  # comicfury won't escape entities in literal text
+  '[f:removehtmltags|Literal text with \'apostrophes\']' => 'Literal text with \'apostrophes\'',
   # comparisons
   '[c:three=3]pass[/]' => 'pass',
   '[c:three=4]fail[/]' => '',
@@ -52,12 +58,14 @@ TESTS = {
   '[l:array][c:l.is_last][v:l.value][/][/]' => 'c',
   # random
   '[f:randomnumber|1|3]' => /^(1|2|3)$/,
+  '[f:randomnumber|1|v:three]' => /^(1|2|3)$/,
 }
 
 VARIABLES = {
   'three' => 3,
   'title' => 'RageRender',
   'code'  => "Some words<br/>\n\nSome more words<script>some code</script>",
+  'text'  => "Text with 'apostrophes' and \"quotes\"",
   'array' => [{'value' => 'a'}, {'value' => 'b'}, {'value' => 'c'}],
 }
 
