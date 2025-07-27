@@ -27,6 +27,12 @@ class FakeSite < Jekyll::Site
     @static_files << file
   end
 
+  def add_chapter path, **data
+    chapter = Jekyll::Document.new(path, site: self, collection: self.collections['chapters'])
+    chapter.merge_data! data.map {|k ,v| [k.to_s, v] }.to_h, source: caller.first
+    @collections['chapters'].docs << chapter
+  end
+
   def add_comic path, **data
     comic = Jekyll::Document.new(path, site: self, collection: self.collections['comics'])
     comic.merge_data! data.map {|k ,v| [k.to_s, v] }.to_h, source: caller.first

@@ -99,11 +99,11 @@ module RageRender
     end
 
     def chaptername
-      chapter.data['title']
+      chapter.data['title'] rescue nil
     end
 
     def chapterlink
-      chapter.url
+      chapter&.url
     end
 
     def dropdown
@@ -152,7 +152,9 @@ module RageRender
     end
 
     def custom
-      @obj.data.fetch('custom', {}).reject do |k, v|
+      chapter_data = chapter.nil? ? {} : chapter.data.fetch('custom', {})
+      comic_data = @obj.data.fetch('custom', {})
+      chapter_data.merge(comic_data).reject do |k, v|
         v.nil? || (v.respond_to?(:empty?) && v.empty?)
       end
     end
@@ -178,11 +180,11 @@ module RageRender
     end
 
     def comicwidth
-      image_obj.data['width'] ||= Dimensions.width image_path
+      image_obj.data['width'] ||= Dimensions.width(image_path) rescue nil
     end
 
     def comicheight
-      image_obj.data['height'] ||= Dimensions.height image_path
+      image_obj.data['height'] ||= Dimensions.height(image_path) rescue nil
     end
 
     # An HTML tag to print for the comic image. If there is a future image, then
@@ -224,7 +226,7 @@ module RageRender
     end
 
     def image_relative_path
-      Pathname.new('/').join(@obj.data['image']).to_s
+      Pathname.new('/').join(@obj.data['image'] || '').to_s
     end
   end
 end
