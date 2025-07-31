@@ -150,6 +150,14 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
     css_files.map {|f| File.read f }.join
   end
 
+  def layoutcss
+    <<~HTML
+    <style type="text/css">
+      #{css}
+    </style>
+    HTML
+  end
+
   delegate_method_as :url, :permalink
   def_data_delegator :title, :pagetitle
 
