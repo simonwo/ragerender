@@ -1,4 +1,5 @@
 # Pipettes help you make drops.
+require 'cgi'
 
 module RageRender
   module Pipettes
@@ -6,6 +7,18 @@ module RageRender
       define_method(aliaz.to_sym) do
         @obj.data[key.to_s]
       end
+    end
+
+    def self.extended mod
+      mod.define_method(:escape) do |str|
+        str.nil? ? nil : CGI.escapeHTML(str)
+      end
+      mod.send(:private, :escape)
+
+      mod.define_method(:maybe_escape) do |str|
+        Pathname.new(@obj.path).extname != '.html' ?  escape(str) : str
+      end
+      mod.send(:private, :maybe_escape)
     end
 
     def def_image_metadata prefix

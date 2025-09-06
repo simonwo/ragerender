@@ -81,10 +81,13 @@ module RageRender
     PAGINATION_FIELDS = %w[ comicurl comictitle posttime ]
 
     delegate_method_as :id, :comicid
-    def_data_delegator :title, :comictitle
     def_delegator :@obj, :url, :comicurl
     data_delegator 'rating'
     data_delegator 'votecount'
+
+    def comictitle
+      escape @obj.data['title']
+    end
 
     def posttime
       comicfury_date(@obj.date)
@@ -99,7 +102,7 @@ module RageRender
     end
 
     def chaptername
-      chapter.data['title'] rescue nil
+      escape(chapter.data['title']) rescue nil
     end
 
     def chapterlink
@@ -118,7 +121,7 @@ module RageRender
           dropdown << {
             'is_selected' => @obj == c,
             'is_disabled' => false,
-            'title' => c.data['title'],
+            'title' => escape(c.data['title']),
             'grouplabel' => c.data['chapter'],
             'newgroup' => new_group,
             'endgroup' => false,
@@ -141,7 +144,7 @@ module RageRender
     def authornotes
       @obj.data['authornotes'] || [{
         'is_reply' => false,
-        'comment' => @obj.content,
+        'comment' => maybe_escape(@obj.content),
         'isguest' => false,
         'avatar' => nil,
         'authorname' => @obj.data['author'],
@@ -156,6 +159,8 @@ module RageRender
       comic_data = @obj.data.fetch('custom', {})
       chapter_data.merge(comic_data).reject do |k, v|
         v.nil? || (v.respond_to?(:empty?) && v.empty?)
+      end.transform_values do |v|
+        v.is_a?(String) ? escape(v) : v
       end
     end
 

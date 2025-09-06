@@ -12,9 +12,15 @@ module RageRender
     private delegate_method_as :data, :fallback_data
     extend Pipettes
 
-    def_data_delegator :title, :blogtitle
     def_data_delegator :author, :authorname
-    delegate_method_as :content, :blog
+
+    def blogtitle
+      escape @obj.data['title']
+    end
+
+    def blog
+      maybe_escape @obj.content
+    end
 
     def posttime
       comicfury_date @obj.date

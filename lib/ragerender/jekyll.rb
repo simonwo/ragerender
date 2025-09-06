@@ -95,11 +95,17 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
     define_method(target) { @obj.site.config[source.to_s] }
   end
 
-  def_config_delegator :title, :webcomicname
-  def_config_delegator :description, :webcomicslogan
   def_config_delegator :search, :searchon
   %w{bannerads allowratings showpermalinks showcomments allowcomments}.each do |var|
     def_config_delegator var, var
+  end
+
+  def webcomicname
+    escape @obj.site.config['title']
+  end
+
+  def webcomicslogan
+    escape @obj.site.config['description']
   end
 
   def webcomicurl
@@ -111,7 +117,7 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
   end
 
   def copyrights
-    @obj.site.config['copyrights'].gsub('[year]', Date.today.year.to_s)
+    escape @obj.site.config['copyrights'].gsub('[year]', Date.today.year.to_s)
   end
 
   def banner
@@ -137,7 +143,7 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
 
   def extrapages
     @obj.site.pages.reject {|page| page.data['hidden'] }.map do |page|
-      {'link' => page.url, 'title' => page.data['title']}
+      {'link' => page.url, 'title' => escape(page.data['title'])}
     end
   end
 
@@ -164,7 +170,10 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
   end
 
   delegate_method_as :url, :permalink
-  def_data_delegator :title, :pagetitle
+
+  def pagetitle
+    escape @obj.data['title']
+  end
 
   def iscomicpage
     @obj.type == :comics

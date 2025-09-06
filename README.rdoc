@@ -60,10 +60,14 @@ The file name of the image will be the title of your comic page. And that's it,
 you added your first comic!
 
 If you want to add an author note, create a text file in a folder called
-<tt>_comics</tt> that has the same file name, but with a <tt>.md</tt> extension:
+<tt>_comics</tt> that has the same file name, but with a <tt>.txt</tt> extension:
 
   mkdir _comics
-  echo "Check out my cool comic y'all!" > '_comics/My first page.md'
+  echo "Check out my cool comic y'all!" > '_comics/My first page.txt'
+
+Or use HTML:
+
+  echo "This is my <strong>first</strong> page!" > '_comics/My first page.html'
 
 Generate the site using:
 

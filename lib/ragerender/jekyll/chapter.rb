@@ -79,9 +79,12 @@ module RageRender
     extend Pipettes
     extend Forwardable
 
-    def_data_delegator :title, :chaptername
     def_data_delegator :description, :chapterdescription
     def_delegator :@obj, :url, :chapterarchiveurl
+
+    def chaptername
+      escape @obj.data['title']
+    end
 
     def cover
       cover_obj.url
