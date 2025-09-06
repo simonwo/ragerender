@@ -3,7 +3,7 @@ require 'jekyll/drops/drop'
 require 'jekyll/drops/document_drop'
 require_relative '../date_formats'
 require_relative 'pagination'
-require_relative 'named_data_delegator'
+require_relative 'pipettes'
 
 # Pass the right variables to blog archive pages.
 Jekyll::Hooks.register :pages, :pre_render do |page, payload|
@@ -90,7 +90,7 @@ module RageRender
   # Data representing a single paginated blog entry, as available from
   # [l:blogs_paginated].
   class PaginatedBlogDrop < Jekyll::Drops::DocumentDrop
-    extend NamedDataDelegator
+    extend Pipettes
 
     def_data_delegator :title, :blogtitle
     def_delegator :@obj, :url, :bloglink

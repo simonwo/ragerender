@@ -1,7 +1,7 @@
 require 'jekyll/hooks'
 require 'jekyll/drops/document_drop'
 require_relative '../date_formats'
-require_relative 'named_data_delegator'
+require_relative 'pipettes'
 
 Jekyll::Hooks.register :posts, :pre_render do |post, payload|
   payload.merge! RageRender::BlogDrop.new(post).to_liquid
@@ -10,7 +10,7 @@ end
 module RageRender
   class BlogDrop < Jekyll::Drops::DocumentDrop
     private delegate_method_as :data, :fallback_data
-    extend NamedDataDelegator
+    extend Pipettes
 
     def_data_delegator :title, :blogtitle
     def_data_delegator :author, :authorname

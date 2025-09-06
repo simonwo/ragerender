@@ -2,7 +2,7 @@ require 'jekyll/generator'
 require 'jekyll/drops/drop'
 require_relative 'comics'
 require_relative 'pagination'
-require_relative 'named_data_delegator'
+require_relative 'pipettes'
 
 # Pass the right variables to archive pages. Note that this doesn't apply to
 # chapter pages because they are not "pages"
@@ -98,7 +98,7 @@ module RageRender
   # A Drop that provides all of the page variables for the archive pages.
   class ArchiveDrop < Jekyll::Drops::Drop
     private delegate_method_as :data, :fallback_data
-    extend NamedDataDelegator
+    extend Pipettes
 
     def ischapterarchive
       @obj.type == :chapters

@@ -14,7 +14,7 @@ require_relative 'jekyll/chapter'
 require_relative 'jekyll/overview'
 require_relative 'jekyll/error'
 require_relative 'jekyll/search'
-require_relative 'jekyll/named_data_delegator'
+require_relative 'jekyll/pipettes'
 require_relative 'jekyll/setup_collection'
 
 Jekyll::Hooks.register :site, :after_init do |site|
@@ -89,7 +89,7 @@ end
 
 class RageRender::WebcomicDrop < Jekyll::Drops::Drop
   extend Forwardable
-  extend RageRender::NamedDataDelegator
+  extend RageRender::Pipettes
 
   def self.def_config_delegator source, target
     define_method(target) { @obj.site.config[source.to_s] }
@@ -121,6 +121,11 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
   def webcomicavatar
     Pathname.new(@obj.site.baseurl || '/').join(@obj.site.config['webcomicavatar'] || '').to_path
   end
+
+  def webcomicicon
+    @obj.site.config.fetch('webcomicavatar', '')
+  end
+  def_image_metadata :webcomicicon
 
   def hasblogs
     @obj.site.posts.docs.any?

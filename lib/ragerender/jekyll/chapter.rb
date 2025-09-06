@@ -1,6 +1,6 @@
 require 'jekyll/generator'
 require 'jekyll/drops/document_drop'
-require_relative 'named_data_delegator'
+require_relative 'pipettes'
 require_relative 'setup_collection'
 
 # Add default values for the 'unchapter' which is used to hold all comics that
@@ -76,7 +76,7 @@ module RageRender
     PAGINATION_FIELDS = %w[ chaptername chapterdescription ]
 
     delegate_method_as :data, :fallback_data
-    extend NamedDataDelegator
+    extend Pipettes
     extend Forwardable
 
     def_data_delegator :title, :chaptername

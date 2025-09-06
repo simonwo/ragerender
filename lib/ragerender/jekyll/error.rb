@@ -1,4 +1,4 @@
-require_relative 'named_data_delegator'
+require_relative 'pipettes'
 
 Jekyll::Hooks.register :pages, :pre_render do |page, payload|
   if page.data['layout'] == 'error-page'
@@ -9,7 +9,7 @@ end
 module RageRender
   class ErrorDrop < Jekyll::Drops::Drop
     private delegate_method_as :data, :fallback_data
-    extend NamedDataDelegator
+    extend Pipettes
     extend Forwardable
 
     def_data_delegator :title, :errortitle

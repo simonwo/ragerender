@@ -2,7 +2,7 @@ require 'jekyll/generator'
 require 'jekyll/document'
 require 'jekyll/drops/document_drop'
 require_relative '../date_formats'
-require_relative 'named_data_delegator'
+require_relative 'pipettes'
 
 Jekyll::Hooks.register :comics, :pre_render do |page, payload|
   payload.merge! RageRender::ComicDrop.new(page).to_liquid
@@ -76,7 +76,7 @@ module RageRender
   end
 
   class ComicDrop < Jekyll::Drops::DocumentDrop
-    extend NamedDataDelegator
+    extend Pipettes
 
     PAGINATION_FIELDS = %w[ comicurl comictitle posttime ]
 
@@ -175,18 +175,6 @@ module RageRender
       @obj.next_doc&.url
     end
 
-    def comicimageurl
-      File.join (@obj.site.baseurl || ''), image_relative_path
-    end
-
-    def comicwidth
-      image_obj.data['width'] ||= Dimensions.width(image_path) rescue nil
-    end
-
-    def comicheight
-      image_obj.data['height'] ||= Dimensions.height(image_path) rescue nil
-    end
-
     # An HTML tag to print for the comic image. If there is a future image, then
     # this is also a link to the next comic page.
     def comicimage
@@ -217,16 +205,12 @@ module RageRender
       @obj.site.collections['chapters'].docs.detect {|c| c.data['slug'] == @obj.data['chapter'] }
     end
 
-    def image_obj
-      @image_obj ||= @obj.site.static_files.detect {|f| f.relative_path == image_relative_path }
-    end
+    data_delegator 'image'
+    def_image_metadata :image
 
-    def image_path
-      image_obj.path
-    end
-
-    def image_relative_path
-      Pathname.new('/').join(@obj.data['image'] || '').to_s
-    end
+    public
+    alias comicimageurl image_url
+    alias comicwidth image_width
+    alias comicheight image_height
   end
 end
