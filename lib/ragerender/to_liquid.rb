@@ -1,3 +1,4 @@
+require 'digest'
 require_relative 'language'
 
 module RageRender
@@ -9,10 +10,17 @@ module RageRender
     'removehtmltags' => proc {|f| Language::Function.new('strip_html', f.params) },
   }
 
-  def self.render_value value
+  def self.render_value value, literals
     case value
     when String
-      value =~ /^[0-9]+$/ ? value : "\"#{value}\""
+      case value
+      when /^[0-9]+$/
+        value
+      when /"'/
+        literals[value]
+      else
+        "\"#{value}\""
+      end
     when Language::Variable
       if value.path.first == 'l' && value.path.last == 'iteration'
         'forloop.index0'
@@ -22,7 +30,7 @@ module RageRender
         value.path.join('.')
       end
     when Language::Function
-      params = value.params.map {|p| render_value p }
+      params = value.params.map {|p| render_value p, literals }
       args = params.drop(1).map {|p| "#{value.name}: #{p}" }.join(' | ')
       [params.first, args.empty? ? value.name : args].join(' | ')
     when nil
@@ -32,20 +40,21 @@ module RageRender
 
   def self.to_liquid document
     tag_stack = Array.new
+    literals = Hash.new {|cache, l| cache[l] = "str" + Digest::MD5.hexdigest(l)}
 
-    document.map do |chunk|
+    chunks = document.map do |chunk|
       case chunk
       when String
         chunk
 
       when Language::Variable
-        "{{ #{render_value chunk} }}"
+        "{{ #{render_value chunk, literals} }}"
 
       when Language::Conditional
         tag_stack << (chunk.reversed ? :endunless : :endif)
 
-        lhs = render_value chunk.lhs
-        rhs = render_value chunk.rhs
+        lhs = render_value chunk.lhs, literals
+        rhs = render_value chunk.rhs, literals
         operator = chunk.operator
 
         if chunk.lhs.is_a?(Language::Variable) && chunk.lhs.path.first == "l"
@@ -82,7 +91,7 @@ module RageRender
 
       when Language::Function
         *output, func = LIQUID_FUNCTIONS.fetch(chunk.name, proc{|f| f}).call(chunk)
-        output << "{{ #{render_value(func)} }}"
+        output << "{{ #{render_value(func, literals)} }}"
         output.join
 
       when Language::Loop
@@ -100,6 +109,10 @@ module RageRender
         end
       end
     end
+
+    literals.map do |(value, name)|
+      "{% capture #{name} %}#{value}{% endcapture %}"
+    end + chunks
   end
 end
 

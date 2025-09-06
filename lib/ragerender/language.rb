@@ -45,13 +45,13 @@ module RageRender
       /!?/.r.map {|c| c == '!' },
       PATH.map {|p| Variable.new(p) },
       optional(OPERATOR),
-      optional(VARIABLE | TEXT))
+      optional(VARIABLE | /[^\]]+/.r))
     ).map {|(reversed, lhs, operator, rhs)| Conditional.new reversed, lhs, operator, rhs }
 
     # FUNCTION with no arguments: 'f:cowsay' => Function.new("cowsay", [])
     # FUNCTION with a variable argument: 'f:js|v:foo' => Function.new('js', [Variable.new(['foo'])])
     # FUNCTION with literal arguments: 'f:add|2|3' => Function.new('add', ['2', '3'])
-    FUNCTION = ('f:'.r >> seq(IDENT, ('|'.r >> (VARIABLE | TEXT)).star)).map {|(name, params)| Function.new name, params }
+    FUNCTION = ('f:'.r >> seq(IDENT, ('|'.r >> (VARIABLE | /[^\]\|]+/.r)).star)).map {|(name, params)| Function.new name, params }
 
     # TAG matches variable tags: '[v:value]' => Variable.new(["value"])
     # TAG matches loop tags: '[l:loop]' => Loop.new(["loop"])

@@ -70,7 +70,7 @@ module RageRender
           when /^[0-9]+$/
             param
           else
-            "\"#{param}\""
+            "\"#{param.gsub(/['"]/) {|c| "\\" + c}}\""
           end
         end
 
