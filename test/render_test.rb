@@ -20,10 +20,13 @@ TESTS = {
   '[f:divide|18|v:three]' => '6',
   '[f:js|v:code]' => "\"Some words&lt;br/&gt;\n\nSome more words&lt;script&gt;some code&lt;/script&gt;\"",
   '[f:removehtmltags|v:code]' => "Some words\n\nSome more words",
-  # escaping: # comicfury will escape entities in variables except when using rawhtml
-  '[v:text]' => 'Text with &#039;apostrophes&#039; and &quot;quotes&quot;',
-  '[f:removehtmltags|v:text]' => 'Text with &#039;apostrophes&#039; and &quot;quotes&quot;',
+  # escaping: language should not do any automatic escaping
+  '[v:text]' => 'Text with \'apostrophes\' and "quotes"',
+  '[v:html]' => '&lt;p&gt;Wicked wango is a fun &#039;game&#039;.&lt;/p&gt;',
+  '[f:removehtmltags|v:text]' => 'Text with \'apostrophes\' and "quotes"',
+  '[f:removehtmltags|v:html]' => '&lt;p&gt;Wicked wango is a fun &#039;game&#039;.&lt;/p&gt;',
   '[f:rawhtml|v:text]' => 'Text with \'apostrophes\' and "quotes"',
+  '[f:rawhtml|v:html]' => '<p>Wicked wango is a fun \'game\'.</p>',
   # comicfury won't escape entities in literal text
   '[f:removehtmltags|Literal text with \'apostrophes\']' => 'Literal text with \'apostrophes\'',
   # comparisons
@@ -66,6 +69,7 @@ VARIABLES = {
   'title' => 'RageRender',
   'code'  => "Some words<br/>\n\nSome more words<script>some code</script>",
   'text'  => "Text with 'apostrophes' and \"quotes\"",
+  'html'  => "&lt;p&gt;Wicked wango is a fun &#039;game&#039;.&lt;/p&gt;",
   'array' => [{'value' => 'a'}, {'value' => 'b'}, {'value' => 'c'}],
 }
 

@@ -6,32 +6,8 @@ module RageRender
     'subtract' => proc {|f| [Language::Function.new('minus', f.params)] },
     'multiply' => proc {|f| [Language::Function.new('times', f.params)] },
     'divide' => proc {|f| [Language::Function.new('divided_by', f.params)] },
-    'removehtmltags' => proc {|f| QUOTE_ESCAPER.call(Language::Function.new('strip_html', f.params)) },
-    'rawhtml' => proc {|f| f.params }
+    'removehtmltags' => proc {|f| Language::Function.new('strip_html', f.params) },
   }
-
-  QUOTE_REPLACEMENTS = {
-    '"' => '&quot;',
-    "'" => '&#039;',
-  }
-
-  REPLACE_QUOTES = ["replace: '\"', '&quot;'", "replace: \"'\", '&#039;'"].join(' | ')
-
-  QUOTE_ESCAPER = proc do |f|
-    output = []
-    params = f.params.each_with_index do |param, index|
-      case param
-      when Language::Variable
-        new_name = param.path.join('_')
-        output << "{% assign #{new_name} = #{render_value(param)} | #{REPLACE_QUOTES} %}"
-        Language::Variable.new([new_name])
-      else
-        param
-      end
-    end
-    output << Language::Function.new(f.name, params)
-    output
-  end
 
   def self.render_value value
     case value
@@ -63,7 +39,7 @@ module RageRender
         chunk
 
       when Language::Variable
-        "{{ #{render_value chunk} | #{REPLACE_QUOTES} }}"
+        "{{ #{render_value chunk} }}"
 
       when Language::Conditional
         tag_stack << (chunk.reversed ? :endunless : :endif)
@@ -105,7 +81,7 @@ module RageRender
         output.join
 
       when Language::Function
-        *output, func = LIQUID_FUNCTIONS.fetch(chunk.name, QUOTE_ESCAPER).call(chunk)
+        *output, func = LIQUID_FUNCTIONS.fetch(chunk.name, proc{|f| f}).call(chunk)
         output << "{{ #{render_value(func)} }}"
         output.join
 
