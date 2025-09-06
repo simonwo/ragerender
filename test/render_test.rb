@@ -18,7 +18,9 @@ TESTS = {
   '[f:subtract|v:three|2]' => '1',
   '[f:multiply|2|v:three]' => '6',
   '[f:divide|18|v:three]' => '6',
-  '[f:js|v:code]' => "\"Some words&lt;br/&gt;\n\nSome more words&lt;script&gt;some code&lt;/script&gt;\"",
+  '[f:js|v:code]' => '"Some words\u003Cbr\/\u003E\n\nSome more words\u003Cscript\u003Esome code\u003C\/script\u003E"',
+  '[f:js|"\'<>✅]' => '"\u0022\u0027\u003C\u003E\u2705"',
+  '[f:js|v:html]' => '"\u0026lt;p\u0026gt;Wicked wango is a fun \u0026#039;game\u0026#039;.\u0026lt;\/p\u0026gt;"',
   '[f:removehtmltags|v:code]' => "Some words\n\nSome more words",
   # escaping: language should not do any automatic escaping
   '[v:text]' => 'Text with \'apostrophes\' and "quotes"',
@@ -95,19 +97,33 @@ describe 'Rendering' do
     Liquid::Template.register_filter(RageRender::TemplateFunctions)
   end
 
-  TESTS.each do |input, output|
-    if output.is_a? String
-      output = /^(#{output})$/
-    end
-
-    it "renders #{input.inspect} using Liquid into #{output.inspect}" do
+  TESTS.each do |input, expected|
+    it "renders #{input.inspect} using Liquid into #{expected.inspect}" do
       liquid = RageRender.to_liquid(Language.parse StringIO.new(input)).join
       template = Liquid::Template.parse liquid
-      _(template.render!(VARIABLES, strict_filters: true)).must_match output
+      output = template.render!(VARIABLES, strict_filters: true)
+
+      case expected
+      when String
+        _(output).must_equal expected
+      when Regexp
+        _(output).must_match expected
+      else
+        raise 'Unknown test type'
+      end
     end
 
-    it "renders #{input.inspect} using ERB into #{output.inspect}" do
-      _(TestTemplate.new(*VARIABLES.values).render(input)).must_match output
+    it "renders #{input.inspect} using ERB into #{expected.inspect}" do
+      output = TestTemplate.new(*VARIABLES.values).render(input)
+
+      case expected
+      when String
+        _(output).must_equal expected
+      when Regexp
+        _(output).must_match expected
+      else
+        raise 'Unknown test type'
+      end
     end
   end
 end

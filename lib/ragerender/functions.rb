@@ -1,11 +1,14 @@
 require 'cgi'
+require 'json'
 
 # Include this module to get ComicFury intrinsic functions available in
 # templates.
 module RageRender
   module TemplateFunctions
     def js str
-      '"' + CGI.escape_html(str) + '"'
+      JSON.generate(str, script_safe: true, ascii_only: true).gsub(/[<>'&]|\\"/) do |m|
+        '\u' + sprintf('%04x', m.chars.last.ord).upcase
+      end
     end
 
     def randomnumber a, b
