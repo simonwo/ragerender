@@ -2,6 +2,7 @@ require_relative 'pipettes'
 
 Jekyll::Hooks.register :pages, :pre_render do |page, payload|
   if page.data['layout'] == 'error-page'
+    RageRender::Pipettes.clean_payload payload
     payload.merge! RageRender::ErrorDrop.new(page).to_liquid
   end
 end

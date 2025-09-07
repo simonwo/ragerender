@@ -5,6 +5,7 @@ require_relative '../date_formats'
 require_relative 'pipettes'
 
 Jekyll::Hooks.register :comics, :pre_render do |page, payload|
+  RageRender::Pipettes.clean_payload payload
   payload.merge! RageRender::ComicDrop.new(page).to_liquid
 end
 

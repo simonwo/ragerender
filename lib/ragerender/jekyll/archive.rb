@@ -8,6 +8,7 @@ require_relative 'pipettes'
 # chapter pages because they are not "pages"
 Jekyll::Hooks.register :pages, :pre_render do |page, payload|
   if page.data['layout'] == 'archive'
+    RageRender::Pipettes.clean_payload payload
     payload.merge! RageRender::ArchiveDrop.new(page).to_liquid
   end
 end

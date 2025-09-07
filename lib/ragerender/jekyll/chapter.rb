@@ -21,6 +21,7 @@ Jekyll::Hooks.register :site, :after_init do |site|
 end
 
 Jekyll::Hooks.register :chapters, :pre_render do |chapter, payload|
+  RageRender::Pipettes.clean_payload payload
   payload.merge! RageRender::ChapterDrop.new(chapter).to_liquid
   payload.merge! RageRender::ArchiveDrop.new(chapter).to_liquid
 end

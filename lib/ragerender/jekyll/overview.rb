@@ -6,6 +6,7 @@ require_relative 'blog_archive'
 # Pass the right variables to overview pages.
 Jekyll::Hooks.register :pages, :pre_render do |page, payload|
   if page.data['layout'] == 'overview'
+    RageRender::Pipettes.clean_payload payload
     payload.merge! RageRender::ComicDrop.new(page.site.collections['comics'].docs.last).to_liquid
     payload.merge! RageRender::OverviewDrop.new(page).to_liquid
   end

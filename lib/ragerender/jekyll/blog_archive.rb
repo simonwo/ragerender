@@ -8,6 +8,7 @@ require_relative 'pipettes'
 # Pass the right variables to blog archive pages.
 Jekyll::Hooks.register :pages, :pre_render do |page, payload|
   if page.data['layout'] == 'blog-archive'
+    RageRender::Pipettes.clean_payload payload
     payload.merge! RageRender::BlogArchiveDrop.new(page).to_liquid
   end
 end

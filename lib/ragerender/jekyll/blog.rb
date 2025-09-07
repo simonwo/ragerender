@@ -4,6 +4,7 @@ require_relative '../date_formats'
 require_relative 'pipettes'
 
 Jekyll::Hooks.register :posts, :pre_render do |post, payload|
+  RageRender::Pipettes.clean_payload payload
   payload.merge! RageRender::BlogDrop.new(post).to_liquid
 end
 

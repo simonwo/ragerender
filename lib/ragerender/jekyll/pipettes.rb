@@ -3,6 +3,13 @@ require 'cgi'
 
 module RageRender
   module Pipettes
+    def self.clean_payload payload
+      Jekyll.logger.debug("Cleaning payload")
+      sets = Jekyll::Drops::DocumentDrop.subclasses.map(&:invokable_methods)
+      methods = sets.reduce(Set.new) {|s,acc| acc.merge(s)} - Set.new(Jekyll::Drops::DocumentDrop.invokable_methods)
+      payload.send(:fallback_data).delete_if {|k| methods.include? k}
+    end
+
     def def_data_delegator key, aliaz
       define_method(aliaz.to_sym) do
         @obj.data[key.to_s]

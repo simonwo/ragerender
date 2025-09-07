@@ -1,5 +1,6 @@
 Jekyll::Hooks.register :pages, :pre_render do |page, payload|
   if page.data['layout'] == 'search'
+    RageRender::Pipettes.clean_payload payload
     payload.merge! RageRender::SearchDrop.new(page).to_liquid
   end
 end
