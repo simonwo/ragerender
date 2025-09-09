@@ -47,9 +47,9 @@ describe 'Escaping' do
     end
 
     it 'only escapes non-body content when sourced from an HTML file' do
-      @site.add_comic 'test.html', title: "It's All Good", content: '<p>some "text" - it\'s cool!</p>'
+      @site.add_post 'test.html', title: "It's All Good", content: '<p>some "text" - it\'s cool!</p>'
 
-      payload = RageRender::BlogDrop.new(@site.collections['comics'].first).to_liquid
+      payload = RageRender::BlogDrop.new(@site.collections['posts'].first).to_liquid
       _(payload).must_include 'blog'
       _(payload['blog']).must_equal '<p>some "text" - it\'s cool!</p>'
       _(payload).must_include 'blogtitle'
