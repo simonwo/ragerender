@@ -1,7 +1,6 @@
 require 'etc'
 require 'stringio'
 require 'jekyll'
-require 'dimensions'
 require_relative 'language'
 require_relative 'functions'
 require_relative 'to_liquid'

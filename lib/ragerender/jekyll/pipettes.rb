@@ -1,5 +1,6 @@
 # Pipettes help you make drops.
 require 'cgi'
+require 'dimensions'
 
 module RageRender
   module Pipettes

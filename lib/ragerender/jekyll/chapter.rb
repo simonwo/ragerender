@@ -81,14 +81,11 @@ module RageRender
     extend Forwardable
 
     def_data_delegator :description, :chapterdescription
+    def_data_delegator :image, :image
     def_delegator :@obj, :url, :chapterarchiveurl
 
     def chaptername
       escape @obj.data['title']
-    end
-
-    def cover
-      cover_obj.url
     end
 
     def cover_width_small
@@ -118,24 +115,15 @@ module RageRender
     end
 
     private
-    def cover_width
-      cover_obj.data['width'] ||= Dimensions.width cover_obj.path
-    end
-
-    def cover_height
-      cover_obj.data['height'] ||= Dimensions.height cover_obj.path
-    end
-
-    def cover_obj
-      @cover_obj ||= @obj.site.static_files.detect {|f| f.relative_path == cover_relative_path }
-    end
-
-    def cover_relative_path
-      Pathname.new('/').join(@obj.data['image']).to_s
-    end
+    def_image_metadata :image
 
     def first_comic
       @obj.site.collections['comics'].docs.select {|c| c.data['chapter'] == @obj.data['slug'] }.first
     end
+
+    public
+    alias cover image_url
+    alias cover_height image_height
+    alias cover_width image_width
   end
 end
