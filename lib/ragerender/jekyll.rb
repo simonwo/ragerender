@@ -169,8 +169,6 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
     HTML
   end
 
-  delegate_method_as :url, :permalink
-
   def pagetitle
     escape @obj.data['title']
   end

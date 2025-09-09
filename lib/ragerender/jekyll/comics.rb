@@ -83,6 +83,7 @@ module RageRender
 
     delegate_method_as :id, :comicid
     def_delegator :@obj, :url, :comicurl
+    def_delegator :@obj, :url, :permalink
     data_delegator 'rating'
     data_delegator 'votecount'
 
