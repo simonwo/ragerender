@@ -107,8 +107,15 @@ Your webcomic now has its basic information set up.
 
 If you want to use your own layout code, then create a <tt>_layouts</tt>
 directory and put the contents of each of your ComicFury layout tabs in there,
-and then put your CSS in the main folder. You should end up with a full set of
-files like:
+and then put your CSS in the main folder.
+
+The easiest way is to go to your Webcomic Management, click "Edit Layout", then
+in the box labelled "Useful", click "Download Layout Backup". Pass this file to
+RageRender, which will <tt>unpack</tt> it for you:
+
+    bundle exec jekyll unpack mycomic-2025-09-13.cflxml
+
+You should end up with a full set of files like:
 
   _layouts
     archive.html
@@ -126,7 +133,7 @@ instead.
 
 === Adding blogs
 
-Add your blogs into a folder called `_posts`:
+Add your blogs into a folder called <tt>_posts</tt>:
 
   cat _posts/2025-05-29-my-new-comic.md
   Hey guys, welcome to my new comic! It's gonna be so sick!
@@ -192,6 +199,16 @@ You control this by setting a <tt>frontpage</tt> key in your site config.
 - <tt>overview</tt> will display the comic overview (blogs and latest page)
 - anything else will display the extra page that has the matching
   <tt>slug</tt> in its Front Matter
+
+=== Putting changes on ComicFury
+
+Once you're done making changes, you can <tt>pack</tt> your layout:
+
+    bundle exec jekyll pack
+
+The resulting file can be uploaded to ComicFury by going to your Webcomic
+Management, clicking "Edit Layout", then in the box labelled "Useful", click
+"Restore Layout Backup".
 
 === Stuff that doesn't work
 

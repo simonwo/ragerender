@@ -5,6 +5,7 @@ require_relative 'language'
 require_relative 'functions'
 require_relative 'to_liquid'
 require_relative 'date_formats'
+require_relative 'cflxml'
 require_relative 'jekyll/archive'
 require_relative 'jekyll/blog'
 require_relative 'jekyll/blog_archive'
@@ -15,6 +16,39 @@ require_relative 'jekyll/error'
 require_relative 'jekyll/search'
 require_relative 'jekyll/pipettes'
 require_relative 'jekyll/setup_collection'
+
+module RageRender
+  class CFLXMLCommands < Jekyll::Command
+    class << self
+      def init_with_program(jekyll)
+        jekyll.command :pack do |pack|
+          pack.syntax 'pack'
+          pack.description 'Create a ComicFury layout backup from this site'
+          pack.action do |args, options|
+            config = configuration_from_options(options)
+            filename = "#{(config['title'] || File.basename(config['source']))} #{Time.now.to_s}.cflxml"
+            puts "Outputting backup file #{filename}"
+            File.open(filename, 'w') do |file|
+              RageRender.pack config['layouts_dir'], config['source'], file
+            end
+          end
+        end
+
+        jekyll.command :unpack do |unpack|
+          unpack.syntax 'unpack <file>'
+          unpack.description 'Overwrite HTML and CSS from a ComicFury layout backup'
+          unpack.action do |args, options|
+            raise ArgumentError, 'unpack requires one cflxml file' unless args.one?
+            config = configuration_from_options(options)
+            File.open(args.first, 'r') do |file|
+              RageRender.unpack file, config['layouts_dir'], config['source']
+            end
+          end
+        end
+      end
+    end
+  end
+end
 
 Jekyll::Hooks.register :site, :after_init do |site|
   # This is obviously quite naughty for many reasons,
