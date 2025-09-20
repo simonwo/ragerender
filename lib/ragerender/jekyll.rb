@@ -117,6 +117,7 @@ Jekyll::Hooks.register :documents, :pre_render do |doc, payload|
 end
 
 Jekyll::Hooks.register :pages, :pre_render do |page, payload|
+  RageRender::Pipettes.clean_payload payload
   payload.merge! RageRender::WebcomicDrop.new(page).to_liquid
 end
 
