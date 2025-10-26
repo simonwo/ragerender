@@ -1,3 +1,4 @@
+require 'uri'
 require 'jekyll/generator'
 require 'jekyll/document'
 require 'jekyll/drops/document_drop'
@@ -186,8 +187,20 @@ module RageRender
       @obj.previous_doc&.url
     end
 
+    def prevcomicpermalink
+      unless @obj.previous_doc.nil?
+        URI.join(@obj.site.config["url"], @obj.site.baseurl || '/', @obj.previous_doc&.url).to_s
+      end
+    end
+
     def nextcomic
       @obj.next_doc&.url
+    end
+
+    def nextcomicpermalink
+      unless @obj.next_doc.nil?
+        URI.join(@obj.site.config["url"], @obj.site.baseurl || '/', @obj.next_doc&.url).to_s
+      end
     end
 
     # An HTML tag to print for the comic image. If there is a future image, then

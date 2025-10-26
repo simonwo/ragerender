@@ -3,7 +3,7 @@ require_relative '../lib/ragerender/jekyll/comics'
 
 describe RageRender::ComicDrop.name do
   before do
-    @site = FakeSite.new
+    @site = FakeSite.new url: 'https://example.cfw.me/'
     @img = '/images/comic.jpg'
     @site.add_static_file @img
   end
@@ -22,5 +22,17 @@ describe RageRender::ComicDrop.name do
     payload = RageRender::ComicDrop.new(@site.collections['comics'].docs.last).to_liquid
     _(payload['comicnumber']).must_equal 2
     _(payload['comicsnum']).must_equal 2
+  end
+
+  it 'correctly gives permalinks to next and previous comics' do
+    @site.add_comic '1.html', image: @img
+    @site.add_comic '2.html', image: @img
+
+    first = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
+    last = RageRender::ComicDrop.new(@site.collections['comics'].docs.last).to_liquid
+    _(first['nextcomicpermalink']).must_equal 'https://example.cfw.me/comics/2/'
+    _(first['prevcomicpermalink']).must_be_nil
+    _(last['nextcomicpermalink']).must_be_nil
+    _(last['prevcomicpermalink']).must_equal 'https://example.cfw.me/comics/1/'
   end
 end

@@ -57,6 +57,7 @@ Jekyll::Hooks.register :site, :after_init do |site|
   site.config['theme'] ||= 'ragerender'
   site.config['title'] ||= File.basename(site.source)
   site.config['search'] ||= true
+  site.config['url'] ||= "https://#{File.basename(site.source)}.thecomicseries.com"
   site.config = site.config
 
   setup_collection site, :comics, '/:collection/:slug/', layout: 'comic-page', chapter: '0'
