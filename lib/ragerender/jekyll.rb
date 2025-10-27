@@ -143,6 +143,19 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
     escape @obj.site.config['description']
   end
 
+  def webcomicgenres
+    (@obj.site.config['genres'] || []).map do |g|
+      {
+        'genre_name' => escape(g),
+        'genre_link' => "https://comicfury.com/search.php?vr=1&query=&tags=#{g.downcase.gsub(/[^a-z]/, '')}"
+      }
+    end
+  end
+
+  def webcomicgenre
+    (webcomicgenres.first || {})['genre_name']
+  end
+
   def webcomicurl
     @obj.site.baseurl
   end
