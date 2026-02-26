@@ -49,7 +49,7 @@ To set up a new site, open a terminal and type:
   mkdir mycomic && cd mycomic
   bundle init
   bundle add jekyll
-  bundle add ragerender
+  bundle add ragerender --group=jekyll_plugins
 
 Now you can add comics! Add the image into an <tt>images</tt> folder:
 
