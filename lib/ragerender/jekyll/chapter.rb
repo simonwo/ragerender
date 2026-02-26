@@ -74,7 +74,7 @@ module RageRender
     COVER_MAX_HEIGHT = 420
     COVER_MAX_WIDTH = 300
 
-    PAGINATION_FIELDS = %w[ chaptername chapterdescription ]
+    PAGINATION_FIELDS = %w[ chaptername chapterdescription chapterid ]
 
     delegate_method_as :data, :fallback_data
     extend Pipettes
@@ -83,6 +83,10 @@ module RageRender
     def_data_delegator :description, :chapterdescription
     def_data_delegator :image, :image
     def_delegator :@obj, :url, :chapterarchiveurl
+
+    def chapterid
+      @obj.collection.docs.index @obj
+    end
 
     def chaptername
       escape @obj.data['title']

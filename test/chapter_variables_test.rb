@@ -16,7 +16,9 @@ describe RageRender::ChapterDrop.name do
 
     first = RageRender::ChapterDrop.new(@site.collections['chapters'].docs.first).to_liquid
     last = RageRender::ChapterDrop.new(@site.collections['chapters'].docs.last).to_liquid
+    _(first['chapterid']).must_equal 0
     _(first['chaptername']).must_equal 'Chapter the First'
+    _(last['chapterid']).must_equal 1
     _(last['chaptername']).must_equal 'Chapter 2'
   end
 end

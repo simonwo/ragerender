@@ -47,4 +47,24 @@ describe RageRender::ComicDrop.name do
     _(last['postyear']).must_equal 2024
     _(last['postmonth']).must_equal 1
    end
+
+  it 'includes appropriate chapter variables in the comic variables' do
+    @site.add_chapter 'first.yml', slug: 'first', title: 'Chapter the First'
+    @site.add_chapter 'second.yml', slug: 'second', title: 'Chapter 2'
+
+    @site.add_comic '1.html', image: @img, chapter: 'first'
+    first = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
+    _(first['chapterid']).must_equal 0
+    _(first['chaptername']).must_equal 'Chapter the First'
+
+    @site.add_comic '2.html', image: @img
+    second = RageRender::ComicDrop.new(@site.collections['comics'].docs.last).to_liquid
+    _(second['chapterid']).must_be_nil
+    _(second['chaptername']).must_be_nil
+
+    @site.add_comic '3.html', image: @img, chapter: 'second'
+    third = RageRender::ComicDrop.new(@site.collections['comics'].docs.last).to_liquid
+    _(third['chapterid']).must_equal 1
+    _(third['chaptername']).must_equal 'Chapter 2'
+  end
 end

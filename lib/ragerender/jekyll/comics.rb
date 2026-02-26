@@ -3,6 +3,7 @@ require 'jekyll/generator'
 require 'jekyll/document'
 require 'jekyll/drops/document_drop'
 require_relative '../date_formats'
+require_relative 'chapter'
 require_relative 'pipettes'
 
 Jekyll::Hooks.register :comics, :pre_render do |page, payload|
@@ -127,8 +128,12 @@ module RageRender
       @obj.data.include? 'chapter'
     end
 
+    def chapterid
+      chapterdrop&.chapterid
+    end
+
     def chaptername
-      escape(chapter.data['title']) rescue nil
+      chapterdrop&.chaptername
     end
 
     def chapterlink
@@ -246,6 +251,10 @@ module RageRender
 
     def chapter
       @obj.site.collections['chapters'].docs.detect {|c| c.data['slug'] == @obj.data['chapter'] }
+    end
+
+    def chapterdrop
+      chapter.nil? ? nil : ChapterDrop.new(chapter)
     end
 
     data_delegator 'image'
