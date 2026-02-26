@@ -35,4 +35,16 @@ describe RageRender::ComicDrop.name do
     _(last['nextcomicpermalink']).must_be_nil
     _(last['prevcomicpermalink']).must_equal 'https://example.cfw.me/comics/1/'
   end
+
+  it 'correctly gives year and month numbers for the post date' do
+    @site.add_comic '1.html', image: @img, date: '2025-12-21'
+    @site.add_comic '2.html', image: @img, date: '2024-1-19'
+
+    first = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
+    last = RageRender::ComicDrop.new(@site.collections['comics'].docs.last).to_liquid
+    _(first['postyear']).must_equal 2025
+    _(first['postmonth']).must_equal 12
+    _(last['postyear']).must_equal 2024
+    _(last['postmonth']).must_equal 1
+   end
 end

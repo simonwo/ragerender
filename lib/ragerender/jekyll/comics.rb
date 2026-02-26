@@ -104,6 +104,14 @@ module RageRender
       comicfury_date(@obj.date)
     end
 
+    def postyear
+      @obj.date.year
+    end
+
+    def postmonth
+      @obj.date.month
+    end
+
     def usechapters
       all_comics.any? {|comic| comic.data.include? 'chapter' }
     end
