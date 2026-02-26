@@ -17,7 +17,7 @@ describe 'Escaping' do
     it 'escapes content when sourced from a text file' do
       @site.add_comic 'test.txt', title: "It's All Good", content: '<p>some "text" - it\'s cool!</p>', image: @img
 
-      payload = RageRender::ComicDrop.new(@site.collections['comics'].first).to_liquid
+      payload = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
       _(payload).must_include 'authornotes'
       _(payload['authornotes'].first['comment']).must_equal '&lt;p&gt;some &quot;text&quot; - it&#39;s cool!&lt;/p&gt;'
       _(payload).must_include 'comictitle'
@@ -27,7 +27,7 @@ describe 'Escaping' do
     it 'only escapes non-body content when sourced from an HTML file' do
       @site.add_comic 'test.html', title: "It's All Good", content: '<p>some "text" - it\'s cool!</p>', image: @img
 
-      payload = RageRender::ComicDrop.new(@site.collections['comics'].first).to_liquid
+      payload = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
       _(payload).must_include 'authornotes'
       _(payload['authornotes'].first['comment']).must_equal '<p>some "text" - it\'s cool!</p>'
       _(payload).must_include 'comictitle'
@@ -39,7 +39,7 @@ describe 'Escaping' do
     it 'escapes content when sourced from a text file' do
       @site.add_post 'test.txt', title: "It's All Good", content: '<p>some "text" - it\'s cool!</p>'
 
-      payload = RageRender::BlogDrop.new(@site.collections['posts'].first).to_liquid
+      payload = RageRender::BlogDrop.new(@site.collections['posts'].docs.first).to_liquid
       _(payload).must_include 'blog'
       _(payload['blog']).must_equal '&lt;p&gt;some &quot;text&quot; - it&#39;s cool!&lt;/p&gt;'
       _(payload).must_include 'blogtitle'
@@ -49,7 +49,7 @@ describe 'Escaping' do
     it 'only escapes non-body content when sourced from an HTML file' do
       @site.add_post 'test.html', title: "It's All Good", content: '<p>some "text" - it\'s cool!</p>'
 
-      payload = RageRender::BlogDrop.new(@site.collections['posts'].first).to_liquid
+      payload = RageRender::BlogDrop.new(@site.collections['posts'].docs.first).to_liquid
       _(payload).must_include 'blog'
       _(payload['blog']).must_equal '<p>some "text" - it\'s cool!</p>'
       _(payload).must_include 'blogtitle'

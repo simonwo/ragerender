@@ -16,7 +16,7 @@ describe RageRender::ComicDrop.name do
   it 'renders variables on a comic' do
     @site.add_comic 'comic.html', custom: {'snackeroo' => 'salsa', 'delicious' => true}, image: @img
 
-    payload = RageRender::ComicDrop.new(@site.collections['comics'].first).to_liquid
+    payload = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
     _(payload).must_include 'custom'
     _(payload['custom'].keys.size).must_equal 2
     _(payload['custom']).must_include 'snackeroo'
@@ -28,7 +28,7 @@ describe RageRender::ComicDrop.name do
   it 'skips empty variables' do
     @site.add_comic 'comic.html', custom: {'empty_string' => '', 'nil_value' => nil}, image: @img
 
-    payload = RageRender::ComicDrop.new(@site.collections['comics'].first).to_liquid
+    payload = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
     _(payload).must_include 'custom'
     _(payload['custom'].keys.size).must_equal 0
   end
@@ -37,7 +37,7 @@ describe RageRender::ComicDrop.name do
     @site.add_chapter 'chapter.html', slug: 'first', custom: {'snackeroo' => 'salsa'}
     @site.add_comic 'comic.html', chapter: 'first', image: @img
 
-    payload = RageRender::ComicDrop.new(@site.collections['comics'].first).to_liquid
+    payload = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
     _(payload).must_include 'custom'
     _(payload['custom'].keys.size).must_equal 1
     _(payload['custom']).must_include 'snackeroo'
@@ -48,7 +48,7 @@ describe RageRender::ComicDrop.name do
     @site.add_chapter 'chapter.html', slug: 'first', custom: {'snackeroo' => 'salsa'}
     @site.add_comic 'comic.html', chapter: 'first', custom: {'delicious' => true}, image: @img
 
-    payload = RageRender::ComicDrop.new(@site.collections['comics'].first).to_liquid
+    payload = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
     _(payload).must_include 'custom'
     _(payload['custom'].keys.size).must_equal 2
     _(payload['custom']).must_include 'snackeroo'
