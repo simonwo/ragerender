@@ -1,0 +1,10 @@
+<h2>{{ title }}</h2>
+
+<form method="post" action="/search/" id="searchbox">
+    <div class="searchbar">
+        <input type="text" name="search" value="[v:searchterm]" placeholder="Search Term" id="bigsearchbox" />
+        <input type="submit" value="Search!" class="submit" />
+    </div>
+</form>
+
+{%- include "field_table", all_fields: all_fields, fields: fields, loops: loops -%}

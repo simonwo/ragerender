@@ -7,6 +7,8 @@ end
 
 module RageRender
   class SearchDrop < Jekyll::Drops::Drop
+    extend Pipettes
+
     private delegate_method_as :data, :fallback_data
     data_delegator 'searchterm'
 
@@ -14,6 +16,7 @@ module RageRender
       !searchterm.nil?
     end
 
+    def_loop :searchresults, :number, *ComicDrop::PAGINATION_FIELDS
     def searchresults
       return [] unless searched
       @results ||= @obj.site.collections['comics'].docs.select do |comic|

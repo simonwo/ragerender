@@ -1,0 +1,15 @@
+{% assign looped_fields = loops | map: "name" %}
+{% for field in fields -%}
+    {%- include "field_row", name: field, field: field -%}
+    {% if looped_fields contains field %}
+        {% assign field_obj = loops | where: "name", field %}
+        {% assign field_fields = field_obj[0].fields %}
+        [l:{{field}}]
+            {% for field_field in field_fields %}
+                {% capture name %}{{field}}&lbrack;[v:l.aiteration]&rbrack; → {{ field_field }}{% endcapture %}
+                {% assign field_name = field_field | prepend: "l." %}
+                {%- include "field_row", name: name, field: field_name %}
+            {% endfor %}
+        [/]
+    {% endif %}
+{% endfor -%}

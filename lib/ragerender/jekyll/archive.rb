@@ -1,6 +1,7 @@
 require 'jekyll/generator'
 require 'jekyll/drops/drop'
 require_relative 'comics'
+require_relative 'chapter'
 require_relative 'pagination'
 require_relative 'pipettes'
 
@@ -113,6 +114,7 @@ module RageRender
       !show_comic_list
     end
 
+    def_loop :chapters, *(RageRender::ChapterDrop.invokable_methods - Jekyll::Drops::DocumentDrop.invokable_methods)
     def chapters
       unless show_chapter_overview
         @obj.site.collections['chapters'].docs.reject do |page|
@@ -123,6 +125,7 @@ module RageRender
       end
     end
 
+    def_loop :comics_paginated, :number, :newchapter, :chapterend, *ComicDrop::PAGINATION_FIELDS, *ChapterDrop::PAGINATION_FIELDS
     def comics_paginated
       number = @obj.data['number']
       comics = if number

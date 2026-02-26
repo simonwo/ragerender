@@ -52,11 +52,40 @@ module RageRender
     end
   end
 
+  # Data representing a single paginated blog entry, as available from
+  # [l:blogs_paginated].
+  class PaginatedBlogDrop < Jekyll::Drops::DocumentDrop
+    extend Pipettes
+
+    def_data_delegator :title, :blogtitle
+    def_delegator :@obj, :url, :bloglink
+    def_data_delegator :author, :authorname
+    def_delegator :@obj, :content, :blog
+    # TODO profilelink
+
+    private delegate_method_as :data, :fallback_data
+
+    def posttime
+      comicfury_date(@obj.date)
+    end
+
+    def allowcomments
+      @obj.site.config['allowcomments']
+    end
+
+    def comments
+      (@obj.data['comments'] || []).size
+    end
+  end
+
   # Data to pass to a blog archive page.
   class BlogArchiveDrop < Jekyll::Drops::Drop
+    extend Pipettes
+
     private delegate_method_as :data, :fallback_data
     data_delegator 'number'
 
+    def_loop :blogs_paginated, *(RageRender::PaginatedBlogDrop.invokable_methods - Jekyll::Drops::DocumentDrop.invokable_methods)
     def blogs_paginated
       all_blogs[number-1]&.map {|blog| PaginatedBlogDrop.new(blog).to_liquid } || []
     end
@@ -81,36 +110,11 @@ module RageRender
         }
       end
     end
+    def_loop :pages, :page, :pagelink, :is_current, :skipped_ahead
 
     private
     def all_blogs
       @all_blogs = @obj.site.posts.docs.each_slice(BLOGS_PER_PAGE).to_a
-    end
-  end
-
-  # Data representing a single paginated blog entry, as available from
-  # [l:blogs_paginated].
-  class PaginatedBlogDrop < Jekyll::Drops::DocumentDrop
-    extend Pipettes
-
-    def_data_delegator :title, :blogtitle
-    def_delegator :@obj, :url, :bloglink
-    def_data_delegator :author, :authorname
-    def_delegator :@obj, :content, :blog
-    # TODO profilelink
-
-    private delegate_method_as :data, :fallback_data
-
-    def posttime
-      comicfury_date(@obj.date)
-    end
-
-    def allowcomments
-      @obj.site.config['allowcomments']
-    end
-
-    def comments
-      (@obj.data['comments'] || []).size
     end
   end
 end

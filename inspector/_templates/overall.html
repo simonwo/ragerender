@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="[v:webcomicname]" />
+        <meta property="og:description" content="[v:pagetitle]" />
+        [c:permalink]
+        <meta property="og:url" content="[v:permalink]" />
+        [/]
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="[v:webcomicname]" />
+        <meta name="twitter:description" content="[v:pagetitle]" />
+
+        [c:previewimageurl]
+            <meta property="og:image" content="[v:previewimageurl]" />
+            <meta property="og:image:width" content="[v:previewimagewidth]" />
+            <meta property="og:image:height" content="[v:previewimageheight]" />
+            <meta name="twitter:image" content="[v:previewimageurl]" />
+        [/]
+
+		<link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/" />
+
+		<title>[v:webcomicname] - [v:pagetitle]</title>
+		[v:layoutcss]
+	</head>
+	<body>
+        <header>
+            <h1><a href="/">[v:webcomicname]</a></h1>
+            <div id="slogan">[v:webcomicslogan]</div>
+        </header>
+
+
+        <nav class="site-nav">
+            <ul id="navigation">
+                <li><a href="/">Home</a></li>
+                <li><a href="/comics/#content-start">Latest</a></li>
+                <li><a href="/comics/1/#content-start">First</a></li>
+                [c:searchon]
+                    <li><a href="/search/">Search</a></li>
+                [/]
+                <li><a href="/archive/">Archive</a></li>
+                [c:infinitescrollenabled]
+                    <li><a href="[v:infinitescrolllink]">Scroll View</a></li>
+                [/]
+                [c:hasblogs]
+                    <li><a href="/blog/">Blog</a></li>
+                [/]
+                [c:!hidefromhost]
+                    <li><a href="[v:addsubscriptionlink]">Subscribe</a></li>
+                [/]
+                [l:extrapages]
+                    <li><a href="[v:l.link]">[v:l.title]</a></li>
+                [/]
+            </ul>
+        </nav>
+
+        <!--layout:[content]-->
+        <footer>
+            <div>
+                <ul>
+                    <li>
+                        <a href="/rss/">RSS</a>
+                    </li>
+                    [c:!hidefromhost]
+                        <li>
+                            <a href="[v:comicprofile]">Comic Profile</a>
+                        </li>
+                    [/]
+                    <li>
+                        <a href="#">Top</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="hostedby">
+                <span>Hosted by </span>
+                <a href="https://comicfury.com">
+                    <img src="https://comicfury.com/images/gator-icon-black.png" height="22" style="height:22px; width:auto;" />
+                    ComicFury
+                </a>
+            </div>
+            <div>
+                &copy; [v:copyrights]<br />
+            </div>
+        </footer>
+	</body>
+</html>

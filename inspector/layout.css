@@ -1,0 +1,44 @@
+body {
+  max-width: 1024px;
+  margin: 2em auto 0;
+
+  font-family: monospace;
+}
+
+body::before {
+	content: "";
+	display: block;
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	height: 0;
+	background: yellow;
+	border-top: 1em black dashed;
+	transform: skewX(-35deg);
+}
+
+table td, table th {
+  background: white;
+  padding: 1ch;
+}
+
+table td:nth-child(3) {
+  word-wrap: anywhere;
+}
+
+table tr:nth-child(even) {
+  filter: invert(0.1);
+}
+
+table th {
+  filter: invert(0.2);
+}
+
+td:empty::before {
+  content: 'blank';
+  display: inline-block;
+  background: rgba(0, 0, 0, 0.15);
+  padding: 0px 4px;
+  border-radius: 5px;
+}

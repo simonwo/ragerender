@@ -1,0 +1,22 @@
+<table>
+    <thead>
+        <tr>
+            <th>Variable name</th>
+            <th>Value on this page</th>
+            <th>Value (escaped)</th>
+            <th>True or false in conditional</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th colspan=4>Unique to this page</th>
+        </tr>
+        {%- include "field_rows", fields: fields, loops: loops -%}
+    </tbody>
+    <tbody>
+        <tr>
+            <th colspan=4>On all pages</th>
+        </tr>
+        {%- include "field_rows", fields: all_fields, loops: loops -%}
+    </tbody>
+</table>

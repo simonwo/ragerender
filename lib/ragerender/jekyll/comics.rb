@@ -1,6 +1,10 @@
 require 'uri'
+require 'liquid/drop'
+require 'jekyll/hooks'
+require 'jekyll/plugin'
 require 'jekyll/generator'
 require 'jekyll/document'
+require 'jekyll/drops/drop'
 require 'jekyll/drops/document_drop'
 require_relative '../date_formats'
 require_relative 'chapter'
@@ -140,6 +144,7 @@ module RageRender
       chapter&.url
     end
 
+    def_loop :dropdown, :is_selected, :is_disabled, :title, :grouplabel, :newgroup, :endgroup, :url
     def dropdown
       all_comics.each_with_object([]) do |c, dropdown|
         new_group = dropdown.last.nil? ? true : dropdown.last['grouplabel'] != c.data['chapter']
@@ -172,6 +177,7 @@ module RageRender
       end
     end
 
+    def_loop :authornotes, :is_reply, :comment, :isguest, :avatar, :authorname, :commentanchor, :posttime, :profilelink
     def authornotes
       @obj.data['authornotes'] || [{
         'is_reply' => false,
@@ -238,6 +244,10 @@ module RageRender
       [linkopen, image, linkclose].join
     end
 
+    def keys
+      super.reject {|k| private_methods.include? k.to_sym }
+    end
+
     def to_liquid
       super.reject do |k, v|
         Jekyll::Drops::DocumentDrop::NESTED_OBJECT_FIELD_BLACKLIST.include? k
@@ -259,6 +269,7 @@ module RageRender
 
     data_delegator 'image'
     def_image_metadata :image
+    private :image, :image_url, :image_width, :image_height
 
     public
     alias comicimageurl image_url

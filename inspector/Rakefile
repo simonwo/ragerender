@@ -1,0 +1,51 @@
+require 'forwardable'
+require 'liquid'
+require_relative '../lib/ragerender/cflxml'
+require_relative '../lib/ragerender/jekyll'
+
+TEMPLATE_DROPS = {
+  'archive' => RageRender::ArchiveDrop,
+  'comic-page' => RageRender::ComicDrop,
+  'error-page' => RageRender::ErrorDrop,
+  'blog-archive' => RageRender::BlogArchiveDrop,
+  'blog-display' => RageRender::BlogDrop,
+  'overview' => RageRender::OverviewDrop,
+  'search' => RageRender::SearchDrop,
+}
+
+Liquid::Template.error_mode = :strict
+Liquid::Template.file_system = Liquid::LocalFileSystem.new('_includes', '%s.html')
+
+directory '_layouts'
+
+TEMPLATE_DROPS.each do |layout, drop|
+  file "_layouts/#{layout}.html" => ['_layouts', RageRender.const_source_location(drop.name).first, "_templates/#{layout}.html", __FILE__] do |t|
+    fields = Set.new(drop.invokable_methods) -
+             Set.new(Jekyll::Drops::DocumentDrop.invokable_methods)
+    all_fields = Set.new(RageRender::WebcomicDrop.invokable_methods) -
+                 Set.new(Jekyll::Drops::DocumentDrop.invokable_methods)
+    template_name = "_templates/#{layout}.html"
+    template = Liquid::Template.parse File::read template_name, environment: ENV
+
+    rake_output_message "liquid ... >#{t.name} <#{template_name}"
+    File::write t.name, template.render!({
+      'title' => "#{drop.name.rpartition(/[A-Z]/).first.split('::').last} Page",
+      'all_fields' => all_fields.to_a.sort,
+      'fields' => fields.to_a.sort,
+      'loops' => [*drop.loops, *RageRender::WebcomicDrop.loops].map {|k, v| {"name" => k.to_s, "fields" => v.map(&:to_s)} },
+    }, strict_variables: true, strict_filters: true)
+  end
+end
+
+file '_layouts/overall.html' => '_templates/overall.html' do |t|
+  cp t.source, t.name
+end
+
+file 'test-layout.cflxml' => ['layout.css', '_layouts/overall.html', *TEMPLATE_DROPS.keys.map {|n| "_layouts/#{n}.html"}] do |t|
+  File.open t.name, 'w' do |f|
+    rake_output_message 'bundle exec jekyll pack'
+    RageRender.pack '_layouts', '.', f
+  end
+end
+
+task :default => 'test-layout.cflxml'

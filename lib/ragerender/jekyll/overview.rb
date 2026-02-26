@@ -17,8 +17,10 @@ end
 
 module RageRender
   class OverviewDrop < Jekyll::Drops::Drop
+    extend Pipettes
     private delegate_method_as :data, :fallback_data
 
+    def_loop :latestblogs, *(RageRender::PaginatedBlogDrop.invokable_methods - Jekyll::Drops::DocumentDrop.invokable_methods)
     def latestblogs
       @obj.site.posts.docs[-5..]&.map {|post| RageRender::PaginatedBlogDrop.new(post) } || []
     end

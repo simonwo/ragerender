@@ -17,6 +17,14 @@ module RageRender
       end
     end
 
+    def def_loop method, *fields
+      (@loops ||= {})[method.to_sym] = fields
+    end
+
+    def loops
+      @loops || {}
+    end
+
     def self.extended mod
       mod.define_method(:escape) do |str|
         str.nil? ? nil : CGI.escapeHTML(str)
@@ -33,6 +41,7 @@ module RageRender
       define_method(:"#{prefix}_relative_path") do
         Pathname.new('/').join(send(prefix.to_sym)).to_path
       end
+      private :"#{prefix}_relative_path"
 
       define_method(:"#{prefix}_url") do
         File.join (@obj.site.baseurl || ''), send(:"#{prefix}_relative_path")
@@ -44,10 +53,12 @@ module RageRender
         end
         instance_variable_get(:"@#{prefix}_obj")
       end
+      private :"#{prefix}_obj"
 
       define_method(:"#{prefix}_path") do
         send(:"#{prefix}_obj").path
       end
+      private :"#{prefix}_path"
 
       define_method(:"#{prefix}_width") do
         send(:"#{prefix}_obj") && (send(:"#{prefix}_obj").data['width'] ||= Dimensions.width(send(:"#{prefix}_path")) rescue nil)

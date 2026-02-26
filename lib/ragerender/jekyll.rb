@@ -1,6 +1,10 @@
 require 'etc'
 require 'stringio'
-require 'jekyll'
+require 'jekyll/command'
+require 'jekyll/hooks'
+require 'jekyll/plugin'
+require 'jekyll/generator'
+require 'liquid/drop'
 require_relative 'language'
 require_relative 'functions'
 require_relative 'to_liquid'
@@ -147,6 +151,7 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
     escape @obj.site.config['description']
   end
 
+  def_loop :webcomicgenres, :genre_link, :genre_name
   def webcomicgenres
     (@obj.site.config['genres'] || []).map do |g|
       {
@@ -193,6 +198,7 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
     false
   end
 
+  def_loop :extrapages, :link, :title
   def extrapages
     @obj.site.pages.reject {|page| page.data['hidden'] }.map do |page|
       {'link' => page.url, 'title' => escape(page.data['title'])}
@@ -212,6 +218,7 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
     css_files << Pathname.new(@obj.site.theme.includes_path).join('layout.css') unless css_files.any?
     css_files.map {|f| File.read f }.join
   end
+  private :css
 
   def layoutcss
     <<~HTML
