@@ -13,6 +13,8 @@ end
 module RageRender
   SPECIAL_COMIC_SLUGS = %w{frontpage index}
 
+  BASE_DIR = File.join(File.dirname(__FILE__), '..', '..', '..')
+
   # Creates comics for each file found in the 'images' directory
   # that does not already have an associated comic object.
   class ComicFromImageGenerator < Jekyll::Generator
@@ -43,9 +45,14 @@ module RageRender
     def generate site
       comics = site.collections['comics']
       index = comics.docs.last.dup
+      collection = comics.docs
+      if index.nil?
+        index = site.pages.detect {|p| p.data["title"] == "Comic not found" }.dup
+        collection = site.pages
+      end
       index.instance_variable_set(:"@data", index.data.dup)
       index.data['slug'] = 'index'
-      comics.docs << index
+      collection << index
     end
   end
 

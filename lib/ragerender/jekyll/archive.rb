@@ -129,7 +129,7 @@ module RageRender
         selected_comics.to_a[number - 1]
       else
         selected_comics.to_a.flatten
-      end.group_by {|c| c.data['chapter'] }
+      end&.group_by {|c| c.data['chapter'] } || []
 
       comics.map do |chapter, comics|
         chapter_data = ChapterDrop.new(@obj.site.collections['chapters'].docs.detect {|c| c.data['slug'] == chapter })

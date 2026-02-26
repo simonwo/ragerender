@@ -106,6 +106,10 @@ class RageRender::FrontpageGenerator < Jekyll::Generator
       collection = site.pages
       site.pages.detect {|p| p.data["slug"] == frontpage }
     end.dup
+    if index.nil?
+      collection = site.pages
+      index = site.pages.detect {|p| p.data['title'] == 'Comic not found' }.dup
+    end
     index.instance_variable_set(:"@data", index.data.dup)
     index.data['permalink'] = '/index.html'
     index.data['slug'] = 'frontpage'

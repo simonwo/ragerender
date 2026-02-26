@@ -50,11 +50,11 @@ module RageRender
       end
 
       define_method(:"#{prefix}_width") do
-        send(:"#{prefix}_obj").data['width'] ||= Dimensions.width(send(:"#{prefix}_path")) rescue nil
+        send(:"#{prefix}_obj") && (send(:"#{prefix}_obj").data['width'] ||= Dimensions.width(send(:"#{prefix}_path")) rescue nil)
       end
 
       define_method(:"#{prefix}_height") do
-        send(:"#{prefix}_obj").data['height'] ||= Dimensions.height(send(:"#{prefix}_path")) rescue nil
+        send(:"#{prefix}_obj") && (send(:"#{prefix}_obj").data['height'] ||= Dimensions.height(send(:"#{prefix}_path")) rescue nil)
       end
     end
   end
