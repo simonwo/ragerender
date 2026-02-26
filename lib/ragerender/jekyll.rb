@@ -169,7 +169,7 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
   end
 
   def copyrights
-    escape @obj.site.config['copyrights'].gsub('[year]', Date.today.year.to_s)
+    escape @obj.site.config.fetch('copyrights', '').gsub('[year]', Date.today.year.to_s)
   end
 
   def banner
