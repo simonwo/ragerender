@@ -169,6 +169,10 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
     @obj.site.baseurl
   end
 
+  def lastupdate
+    comicfury_date Time.now
+  end
+
   def lastupdatedmy
     Time.now.strftime('%d/%m/%Y')
   end
