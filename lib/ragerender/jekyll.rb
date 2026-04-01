@@ -134,8 +134,8 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
   extend Forwardable
   extend RageRender::Pipettes
 
-  def self.def_config_delegator source, target
-    define_method(target) { @obj.site.config[source.to_s] }
+  def self.def_config_delegator source, target, default=nil
+    define_method(target) { @obj.site.config.fetch(source.to_s, default) }
   end
 
   def_config_delegator :search, :searchon
@@ -192,6 +192,14 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
 
   def hasblogs
     @obj.site.posts.docs.any?
+  end
+
+  def comicsnum
+    @obj.site.collections['comics'].docs.size
+  end
+
+  %w{subscriptions pageviewsnum visitsnum}.each do |var|
+    def_config_delegator var, var, 0
   end
 
   def hidefromhost
