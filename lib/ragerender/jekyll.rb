@@ -206,10 +206,14 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
     false
   end
 
-  def_loop :extrapages, :link, :title
+  def_loop :extrapages, :link, :title, :foldername
   def extrapages
     @obj.site.pages.reject {|page| page.data['hidden'] }.map do |page|
-      {'link' => page.url, 'title' => escape(page.data['title'])}
+      {
+        'link' => page.url,
+        'title' => escape(page.data['title']),
+        'foldername' => URI::parse(page.url).pathname,
+      }
     end
   end
 
