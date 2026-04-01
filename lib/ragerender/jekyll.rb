@@ -240,6 +240,30 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
     escape @obj.data['title']
   end
 
+  def isarchive
+    @obj.data['layout'] == 'archive'
+  end
+
+  def issearch
+    @obj.data['layout'] == 'search'
+  end
+
+  def isblog
+    @obj.data['layout'] == 'blog-archive'
+  end
+
+  def isoverview
+    @obj.data['layout'] == 'overview'
+  end
+
+  def iserrorpage
+    @obj.data['layout'] == 'error-page'
+  end
+
+  def isfrontpage
+    @obj.data['slug'] == 'frontpage'
+  end
+
   def iscomicpage
     @obj.type == :comics
   end
