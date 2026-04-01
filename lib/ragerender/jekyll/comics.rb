@@ -66,12 +66,16 @@ module RageRender
 
     def generate site
       site.collections['comics'].docs.each do |comic|
-        comic.data['image'] ||= default_image_path(comic)
+        comic.data['image'] ||= default_image_path(site, comic)
       end
     end
 
-    def default_image_path comic
-      "images/#{comic.data['slug']}.jpg"
+    def images site
+      @images ||= site.static_files.select {|f| f.relative_path.start_with? '/images' }.map {|f| [f.basename, f] }.to_h
+    end
+
+    def default_image_path site, comic
+      images(site)[comic.data['slug']].relative_path
     end
   end
 
