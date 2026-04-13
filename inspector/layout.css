@@ -16,11 +16,17 @@ body::before {
 	background: yellow;
 	border-top: 1em black dashed;
 	transform: skewX(-35deg);
+  max-width: 99vw;
 }
 
 table td, table th {
   background: white;
   padding: 1ch;
+}
+
+table td:nth-child(2) {
+  max-width: 35vw;
+  overflow: scroll;
 }
 
 table td:nth-child(3) {
