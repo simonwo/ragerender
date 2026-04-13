@@ -216,7 +216,7 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
       {
         'link' => page.url,
         'title' => escape(page.data['title']),
-        'foldername' => URI::parse(page.url).pathname,
+        'foldername' => File.basename(URI::parse(page.url).path, '.*'),
       }
     end
   end

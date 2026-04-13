@@ -26,7 +26,22 @@ describe RageRender::WebcomicDrop.name do
 
     payload = RageRender::WebcomicDrop.new(page.first).to_liquid
     _(payload['webcomicgenres']).wont_be_nil
-    _(payload['webcomicgenres'].size).must_equal 0
+    _(payload['webcomicgenres']).must_be :empty?
     _(payload['webcomicgenre']).must_be_nil
+  end
+
+  it 'handles extra pages' do
+    @site = FakeSite.new
+    File.write File.join(@site.source, 'visible.html'), "---\ntitle: Visible Page\nhidden: no\n---\n"
+    @site.add_page @site.source, '', 'visible.html'
+    File.write File.join(@site.source, 'hidden.html'), "---\ntitle: Hidden Page\nhidden: yes\n---\n"
+    @site.add_page @site.source, '', 'hidden.html'
+
+    page = @site.add_post 'test.txt'
+    payload = RageRender::WebcomicDrop.new(page.first).to_liquid
+    _(payload['extrapages'].size).must_equal 1
+    _(payload['extrapages'].first['title']).must_equal 'Visible Page'
+    _(payload['extrapages'].first['link']).must_equal '/visible.html'
+    _(payload['extrapages'].first['foldername']).must_equal 'visible'
   end
 end
