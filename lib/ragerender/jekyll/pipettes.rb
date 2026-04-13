@@ -11,6 +11,12 @@ module RageRender
       payload.send(:fallback_data).delete_if {|k| methods.include? k}
     end
 
+    def def_safe_delegator obj, key, aliaz
+      define_method(aliaz.to_sym) do
+        send(obj.to_sym)&.send(key.to_sym)
+      end
+    end
+
     def def_data_delegator key, aliaz
       define_method(aliaz.to_sym) do
         @obj.data[key.to_s]

@@ -126,8 +126,12 @@ module RageRender
     def_image_metadata :image
     private :image_url, :image_width, :image_height
 
+    def comics
+      @obj.site.collections['comics'].docs.select {|c| c.data['chapter'] == @obj.data['slug'] }
+    end
+
     def first_comic
-      @obj.site.collections['comics'].docs.select {|c| c.data['chapter'] == @obj.data['slug'] }.first
+      comics.first
     end
 
     public

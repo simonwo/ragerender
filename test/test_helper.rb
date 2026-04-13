@@ -33,6 +33,7 @@ class FakeSite < Jekyll::Site
     doc.merge_data! data.map {|k ,v| [k.to_s, v] }.to_h, source: caller.first
     doc.content = doc.data.delete('content')
     @collections[collection].docs << doc
+    @collections[collection].send(:sort_docs!)
   end
 
   def add_chapter path, **data

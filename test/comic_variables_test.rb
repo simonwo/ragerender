@@ -36,15 +36,78 @@ describe RageRender::ComicDrop.name do
     _(last['prevcomicpermalink']).must_equal 'https://example.cfw.me/comics/1/'
   end
 
-  it 'correctly gives year and month numbers for the post date' do
+  it 'orders comics correctly by publication date' do
     @site.add_comic '1.html', image: @img, date: '2025-12-21'
     @site.add_comic '2.html', image: @img, date: '2024-1-19'
 
     first = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
     last = RageRender::ComicDrop.new(@site.collections['comics'].docs.last).to_liquid
+    _(first['nextcomic']).must_equal '/comics/1/'
+    _(first['prevcomic']).must_be_nil
+    _(first['isfirstcomic']).must_equal true
+    _(first['islastcomic']).must_equal false
+    _(last['nextcomic']).must_be_nil
+    _(last['prevcomic']).must_equal '/comics/2/'
+    _(last['isfirstcomic']).must_equal false
+    _(last['islastcomic']).must_equal true
+  end
+
+  it 'orders comics correctly between chapters' do
+    @site.add_chapter 'first.yml', slug: 'first', title: 'Chapter the First'
+    @site.add_chapter 'second.yml', slug: 'second', title: 'Chapter 2'
+    @site.add_comic '1.html', image: @img, date: '2024-2-19', chapter: 'second'
+    @site.add_comic '2.html', image: @img, date: '2024-1-19', chapter: 'first'
+    @site.add_comic '3.html', image: @img, date: '2024-4-19', chapter: 'second'
+    @site.add_comic '4.html', image: @img, date: '2024-3-19', chapter: 'first'
+
+    first = RageRender::ComicDrop.new(@site.collections['comics'].docs[0]).to_liquid
+    second = RageRender::ComicDrop.new(@site.collections['comics'].docs[1]).to_liquid
+    third = RageRender::ComicDrop.new(@site.collections['comics'].docs[2]).to_liquid
+    fourth = RageRender::ComicDrop.new(@site.collections['comics'].docs[3]).to_liquid
+
+    # Default order should be date based
+    _(first['comicurl']).must_equal '/comics/2/'
+    _(first['nextcomic']).must_equal '/comics/1/'
+    _(first['prevcomic']).must_be_nil
+    _(second['comicurl']).must_equal '/comics/1/'
+    _(second['nextcomic']).must_equal '/comics/4/'
+    _(second['prevcomic']).must_equal '/comics/2/'
+    _(third['comicurl']).must_equal '/comics/4/'
+    _(third['nextcomic']).must_equal '/comics/3/'
+    _(third['prevcomic']).must_equal '/comics/1/'
+    _(fourth['comicurl']).must_equal '/comics/3/'
+    _(fourth['nextcomic']).must_be_nil
+    _(fourth['prevcomic']).must_equal '/comics/4/'
+
+    # Chapter links should point within chapters first?
+    # 2 -> 4 -> 1 -> 3
+    _(first['isfirstcomicinchapter']).must_equal true
+    _(first['islastcomicinchapter']).must_equal false
+    _(first['nextcomicbychapter']).must_equal '/comics/4/'
+    _(first['prevcomicbychapter']).must_be_nil
+    _(second['isfirstcomicinchapter']).must_equal true
+    _(second['islastcomicinchapter']).must_equal false
+    _(second['nextcomicbychapter']).must_equal '/comics/3/'
+    _(second['prevcomicbychapter']).must_equal '/comics/4/'
+    _(third['isfirstcomicinchapter']).must_equal false
+    _(third['islastcomicinchapter']).must_equal true
+    _(third['nextcomicbychapter']).must_equal '/comics/1/'
+    _(third['prevcomicbychapter']).must_equal '/comics/2/'
+    _(fourth['isfirstcomicinchapter']).must_equal false
+    _(fourth['islastcomicinchapter']).must_equal true
+    _(fourth['nextcomicbychapter']).must_be_nil
+    _(fourth['prevcomicbychapter']).must_equal '/comics/1/'
+  end
+
+  it 'correctly gives year and month numbers for the post date' do
+    @site.add_comic '1.html', image: @img, date: '2025-12-21'
+    @site.add_comic '2.html', image: @img, date: '2026-1-19'
+
+    first = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
+    last = RageRender::ComicDrop.new(@site.collections['comics'].docs.last).to_liquid
     _(first['postyear']).must_equal 2025
     _(first['postmonth']).must_equal 12
-    _(last['postyear']).must_equal 2024
+    _(last['postyear']).must_equal 2026
     _(last['postmonth']).must_equal 1
    end
 

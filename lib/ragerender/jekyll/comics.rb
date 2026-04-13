@@ -136,16 +136,19 @@ module RageRender
       @obj.data.include? 'chapter'
     end
 
-    def chapterid
-      chapterdrop&.chapterid
+    def_safe_delegator :chapterdrop, :chapterid, :chapterid
+    def_safe_delegator :chapterdrop, :chaptername, :chaptername
+    def_safe_delegator :chapter, :url, :chapterlink
+
+    def_safe_delegator :prevchapterdrop, :url, :prevchapter
+    def_safe_delegator :nextchapterdrop, :url, :nextchapter
+
+    def isfirstcomicinchapter
+      (chapterdrop&.send(:comics) || []).first == @obj
     end
 
-    def chaptername
-      chapterdrop&.chaptername
-    end
-
-    def chapterlink
-      chapter&.url
+    def islastcomicinchapter
+      (chapterdrop&.send(:comics) || []).last == @obj
     end
 
     def_loop :dropdown, :is_selected, :is_disabled, :title, :grouplabel, :newgroup, :endgroup, :url
@@ -213,24 +216,26 @@ module RageRender
       all_comics.last == @obj
     end
 
-    def prevcomic
-      @obj.previous_doc&.url
+    def_safe_delegator :prevcomicdrop, :url, :prevcomic
+    def_safe_delegator :prevcomicdrop, :permalink, :prevcomicpermalink
+
+    def_safe_delegator :nextcomicdrop, :url, :nextcomic
+    def_safe_delegator :nextcomicdrop, :permalink, :nextcomicpermalink
+
+    def prevcomicbychapter
+      if isfirstcomicinchapter
+        (prevchapterdrop&.send(:comics) || []).last
+      else
+        (chapterdrop&.send(:comics) || []).each_cons(2).detect {|_, this| this == @obj }&.first
+      end&.url
     end
 
-    def prevcomicpermalink
-      unless @obj.previous_doc.nil?
-        URI.join(@obj.site.config["url"], @obj.site.baseurl || '/', @obj.previous_doc&.url).to_s
-      end
-    end
-
-    def nextcomic
-      @obj.next_doc&.url
-    end
-
-    def nextcomicpermalink
-      unless @obj.next_doc.nil?
-        URI.join(@obj.site.config["url"], @obj.site.baseurl || '/', @obj.next_doc&.url).to_s
-      end
+    def nextcomicbychapter
+      if islastcomicinchapter
+        nextchapterdrop&.send(:first_comic)
+      else
+        (chapterdrop&.send(:comics) || []).each_cons(2).detect {|this, _| this == @obj }&.last
+      end&.url
     end
 
     # An HTML tag to print for the comic image. If there is a future image, then
@@ -267,8 +272,24 @@ module RageRender
       @obj.site.collections['chapters'].docs.detect {|c| c.data['slug'] == @obj.data['chapter'] }
     end
 
+    def nextcomicdrop
+      @obj.next_doc.nil? ? nil : ComicDrop.new(@obj.next_doc)
+    end
+
+    def prevcomicdrop
+      @obj.previous_doc.nil? ? nil : ComicDrop.new(@obj.previous_doc)
+    end
+
     def chapterdrop
       chapter.nil? ? nil : ChapterDrop.new(chapter)
+    end
+
+    def prevchapterdrop
+      chapter&.previous_doc.nil? ? nil : ChapterDrop.new(chapter.previous_doc)
+    end
+
+    def nextchapterdrop
+      chapter&.next_doc.nil? ? nil : ChapterDrop.new(chapter.next_doc)
     end
 
     data_delegator 'image'
