@@ -154,6 +154,8 @@ details of your author notes and blogs manually:
   date: "2025-03-05 16:20"
   image: "images/ghost.png"
   author: "Jane doe"
+  description: "Some spooky mouseover text"
+  keywords: [excellent, comic page, spooky]
   custom:
     # use yes and no for tickbox settings
     spooky: yes
@@ -164,6 +166,9 @@ details of your author notes and blogs manually:
       Testing webcomics
       Now easier than ever
       Thanks to RageRender
+  transcript: >
+    The transcript contains a machine-readable version
+    of all the text in your comic image.
   comments:
     - author: "Skippy"
       date: "13 Mar 2025, 3.45 PM"

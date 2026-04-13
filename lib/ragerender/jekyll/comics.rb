@@ -108,6 +108,18 @@ module RageRender
       escape @obj.data['title']
     end
 
+    def comicdescription
+      escape @obj.data['description']
+    end
+
+    def transcript
+      escape @obj.data['transcript']
+    end
+
+    def keywords
+      (@obj.data['keywords'] || []).map {|k| escape k }
+    end
+
     def comicnumber
       1 + all_comics.index(@obj)
     end
@@ -138,6 +150,7 @@ module RageRender
 
     def_safe_delegator :chapterdrop, :chapterid, :chapterid
     def_safe_delegator :chapterdrop, :chaptername, :chaptername
+    def_safe_delegator :chapterdrop, :chapterdescription, :chapterdescription
     def_safe_delegator :chapter, :url, :chapterlink
 
     def_safe_delegator :prevchapterdrop, :url, :prevchapter
@@ -218,9 +231,11 @@ module RageRender
 
     def_safe_delegator :prevcomicdrop, :url, :prevcomic
     def_safe_delegator :prevcomicdrop, :permalink, :prevcomicpermalink
+    def_safe_delegator :prevcomicdrop, :title, :prevcomictitle
 
     def_safe_delegator :nextcomicdrop, :url, :nextcomic
     def_safe_delegator :nextcomicdrop, :permalink, :nextcomicpermalink
+    def_safe_delegator :nextcomicdrop, :title, :nextcomictitle
 
     def prevcomicbychapter
       if isfirstcomicinchapter
@@ -245,7 +260,9 @@ module RageRender
         <a href="#{nextcomic}">
       HTML
       image = <<~HTML
-        <img id="comicimage" src="#{comicimageurl}" width="#{comicwidth}" height="#{comicheight}">
+        <img id="comicimage" src="#{comicimageurl}" alt="#{comictitle}"
+             width="#{comicwidth}" height="#{comicheight}"
+             title="#{comicdescription}">
       HTML
       linkclose = nextcomic ? <<~HTML : ''
         </a>

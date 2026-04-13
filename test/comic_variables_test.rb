@@ -24,16 +24,25 @@ describe RageRender::ComicDrop.name do
     _(payload['comicsnum']).must_equal 2
   end
 
-  it 'correctly gives permalinks to next and previous comics' do
-    @site.add_comic '1.html', image: @img
-    @site.add_comic '2.html', image: @img
+  it 'correctly gives variables for next and previous comics' do
+    @site.add_comic '1.html', title: 'First', image: @img
+    @site.add_comic '2.html', title: 'Second', image: @img
 
     first = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
-    last = RageRender::ComicDrop.new(@site.collections['comics'].docs.last).to_liquid
+    _(first['nextcomic']).must_equal '/comics/2/'
+    _(first['prevcomic']).must_be_nil
     _(first['nextcomicpermalink']).must_equal 'https://example.cfw.me/comics/2/'
     _(first['prevcomicpermalink']).must_be_nil
+    _(first['nextcomictitle']).must_equal 'Second'
+    _(first['prevcomictitle']).must_be_nil
+
+    last = RageRender::ComicDrop.new(@site.collections['comics'].docs.last).to_liquid
+    _(last['nextcomic']).must_be_nil
+    _(last['prevcomic']).must_equal '/comics/1/'
     _(last['nextcomicpermalink']).must_be_nil
     _(last['prevcomicpermalink']).must_equal 'https://example.cfw.me/comics/1/'
+    _(last['nextcomictitle']).must_be_nil
+    _(last['prevcomictitle']).must_equal 'First'
   end
 
   it 'orders comics correctly by publication date' do
@@ -112,22 +121,25 @@ describe RageRender::ComicDrop.name do
    end
 
   it 'includes appropriate chapter variables in the comic variables' do
-    @site.add_chapter 'first.yml', slug: 'first', title: 'Chapter the First'
-    @site.add_chapter 'second.yml', slug: 'second', title: 'Chapter 2'
+    @site.add_chapter 'first.yml', slug: 'first', title: 'Chapter the First', description: 'It begins!'
+    @site.add_chapter 'second.yml', slug: 'second', title: 'Chapter 2', description: 'It carries on'
 
     @site.add_comic '1.html', image: @img, chapter: 'first'
     first = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
     _(first['chapterid']).must_equal 0
     _(first['chaptername']).must_equal 'Chapter the First'
+    _(first['chapterdescription']).must_equal 'It begins!'
 
     @site.add_comic '2.html', image: @img
     second = RageRender::ComicDrop.new(@site.collections['comics'].docs.last).to_liquid
     _(second['chapterid']).must_be_nil
     _(second['chaptername']).must_be_nil
+    _(second['chapterdescription']).must_be_nil
 
     @site.add_comic '3.html', image: @img, chapter: 'second'
     third = RageRender::ComicDrop.new(@site.collections['comics'].docs.last).to_liquid
     _(third['chapterid']).must_equal 1
     _(third['chaptername']).must_equal 'Chapter 2'
+    _(third['chapterdescription']).must_equal 'It carries on'
   end
 end
