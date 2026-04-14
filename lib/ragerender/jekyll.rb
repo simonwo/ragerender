@@ -292,6 +292,10 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
     @obj.data['layout'] == 'search'
   end
 
+  def iscomicpage
+    @obj.data['layout'] == 'comic-page'
+  end
+
   def isblog
     @obj.data['layout'] == 'blog-archive'
   end
@@ -308,8 +312,8 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
     @obj.data['slug'] == 'frontpage'
   end
 
-  def iscomicpage
-    @obj.type == :comics
+  def iscomicrelatedpage
+    @obj.type == :comics || @obj.data['layout'] == 'overview'
   end
 
   def isextrapage

@@ -33,7 +33,7 @@ class FakeSite < Jekyll::Site
     doc.merge_data! data.map {|k ,v| [k.to_s, v] }.to_h, source: caller.first
     doc.content = doc.data.delete('content')
     @collections[collection].docs << doc
-    @collections[collection].send(:sort_docs!)
+    doc
   end
 
   def add_chapter path, **data
@@ -57,5 +57,6 @@ class FakeSite < Jekyll::Site
     page = Jekyll::Page.new(self, @source, dir, name)
     page.data.merge! data
     @pages << page
+    page
   end
 end

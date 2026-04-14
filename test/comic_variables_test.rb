@@ -48,6 +48,7 @@ describe RageRender::ComicDrop.name do
   it 'orders comics correctly by publication date' do
     @site.add_comic '1.html', image: @img, date: '2025-12-21'
     @site.add_comic '2.html', image: @img, date: '2024-1-19'
+    @site.collections['comics'].send(:sort_docs!)
 
     first = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
     last = RageRender::ComicDrop.new(@site.collections['comics'].docs.last).to_liquid
@@ -68,6 +69,7 @@ describe RageRender::ComicDrop.name do
     @site.add_comic '2.html', image: @img, date: '2024-1-19', chapter: 'first'
     @site.add_comic '3.html', image: @img, date: '2024-4-19', chapter: 'second'
     @site.add_comic '4.html', image: @img, date: '2024-3-19', chapter: 'first'
+    @site.collections['comics'].send(:sort_docs!)
 
     first = RageRender::ComicDrop.new(@site.collections['comics'].docs[0]).to_liquid
     second = RageRender::ComicDrop.new(@site.collections['comics'].docs[1]).to_liquid
