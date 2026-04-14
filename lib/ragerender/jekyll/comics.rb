@@ -140,10 +140,6 @@ module RageRender
       @obj.date.month
     end
 
-    def usechapters
-      all_comics.any? {|comic| comic.data.include? 'chapter' }
-    end
-
     def haschapter
       @obj.data.include? 'chapter'
     end

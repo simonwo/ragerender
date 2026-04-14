@@ -210,8 +210,16 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
     @obj.site.posts.docs.any?
   end
 
+  def hascomics
+    comicsnum > 0
+  end
+
   def comicsnum
     @obj.site.collections['comics'].docs.size
+  end
+
+  def usechapters
+    @obj.site.collections['comics'].docs.any? {|comic| comic.data.include? 'chapter' }
   end
 
   %w{subscriptions pageviewsnum visitsnum}.each do |var|
