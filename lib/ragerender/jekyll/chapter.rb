@@ -76,7 +76,6 @@ module RageRender
 
     PAGINATION_FIELDS = %w[ chaptername chapterdescription chapterid ]
 
-    delegate_method_as :data, :fallback_data
     extend Pipettes
     extend Forwardable
 
@@ -132,6 +131,10 @@ module RageRender
 
     def first_comic
       comics.first
+    end
+
+    def fallback_data
+      {}
     end
 
     public
