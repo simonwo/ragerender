@@ -116,8 +116,8 @@ module RageRender
       escape @obj.data['transcript']
     end
 
-    def keywords
-      (@obj.data['keywords'] || []).map {|k| escape k }
+    def comickeywords
+      (@obj.data['keywords'] || []).map {|k| escape k }.join(', ')
     end
 
     def comicnumber
