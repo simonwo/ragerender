@@ -143,6 +143,10 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
     def_config_delegator var, var
   end
 
+  def webcomicid
+    @obj.site.config['id'] || @obj.site.hash
+  end
+
   def webcomicname
     escape @obj.site.config['title']
   end
