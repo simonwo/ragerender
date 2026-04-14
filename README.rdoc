@@ -92,6 +92,7 @@ Put something like this in your webcomic folder and call it
   description: >
     My epic story about how him and her
     fell into a romantic polycule with they and them
+  status: active
   genres:
   - Comedy
   - Romance

@@ -148,7 +148,15 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
   end
 
   def webcomicslogan
+    escape @obj.site.config['slogan']
+  end
+
+  def webcomicdescription
     escape @obj.site.config['description']
+  end
+
+  def webcomicactivitystatus
+    escape @obj.site.config['status']&.capitalize
   end
 
   def_loop :webcomicgenres, :genre_link, :genre_name
@@ -166,7 +174,11 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
   end
 
   def webcomicurl
-    @obj.site.baseurl
+    @obj.site.config['url']
+  end
+
+  def webcomicrating
+    @obj.site.config['rating']
   end
 
   def lastupdate
