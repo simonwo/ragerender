@@ -163,6 +163,18 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
     escape @obj.site.config['status']&.capitalize
   end
 
+  def webcomicsub
+    URI.parse(@obj.site.config['url']).host.split.first
+  end
+
+  def comicprofile
+    "https://comicfury.com/comicprofile.php?url=#{webcomicsub}"
+  end
+
+  def addsubscriptionlink
+    "https://comicfury.com/comic.php?action=addsubscription&url=#{webcomicsub}"
+  end
+
   def_loop :webcomicgenres, :genre_link, :genre_name
   def webcomicgenres
     (@obj.site.config['genres'] || []).map do |g|
