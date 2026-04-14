@@ -103,6 +103,7 @@ module RageRender
     def_delegator :@obj, :url, :permalink
     data_delegator 'rating'
     data_delegator 'votecount'
+    data_delegator 'comments'
 
     def comictitle
       escape @obj.data['title']
