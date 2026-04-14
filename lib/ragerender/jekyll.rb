@@ -316,6 +316,22 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
     @obj.type == :pages && @obj.data['hidden'] != true
   end
 
+  def currentdate
+    comicfury_date Date.today
+  end
+
+  def day
+    Date.today.day
+  end
+
+  def month
+    Date.today.month
+  end
+
+  def year
+    Date.today.year
+  end
+
   def fallback_data
     {}
   end
