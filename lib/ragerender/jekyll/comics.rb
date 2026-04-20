@@ -21,10 +21,34 @@ module RageRender
 
   BASE_DIR = File.join(File.dirname(__FILE__), '..', '..', '..')
 
+  # If there are any HTML pages in the /images directory, we treat these as
+  # HTML-comics where the author has specified their own HTML to use instead of
+  # a comic image. We turn these into static files so that they don't appear as
+  # extra pages.
+  class ComicHTMLToStaticFileGenerator < Jekyll::Generator
+    priority :highest
+
+    def generate site
+      site.pages.select {|f| f.relative_path.start_with? 'images' }.each do |html|
+        site.pages.delete html
+        static_file = Jekyll::StaticFile.new(
+          site,
+          html.instance_variable_get(:"@base"),
+          # Jekyll::Pages have their leading slash removed, but we need it
+          html.instance_variable_get(:"@dir").gsub(/^([^\/])/) {|s| '/' + s},
+          html.instance_variable_get(:"@name"),
+        )
+        static_file.data['content'] = html.content
+        static_file.defaults['published'] = false
+        site.static_files.append static_file
+      end
+    end
+  end
+
   # Creates comics for each file found in the 'images' directory
   # that does not already have an associated comic object.
   class ComicFromImageGenerator < Jekyll::Generator
-    priority :highest
+    priority :high
 
     def generate site
       images = site.static_files.select {|f| f.relative_path.start_with? '/images' }.map {|f| [f.basename, f] }.to_h
@@ -254,6 +278,8 @@ module RageRender
     def comicimagetype
       if imagedrops.size > 1
         'multiimage'
+      elsif imagedrop.send(:image_obj).extname == '.html'
+        'html'
       else
         'image'
       end

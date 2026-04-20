@@ -209,6 +209,13 @@ You control this by setting a <tt>frontpage</tt> key in your site config.
 - anything else will display the extra page that has the matching
   <tt>slug</tt> in its Front Matter
 
+=== Comics with custom HTML code
+
+You can use custom HTML code in place of an image for your comic page. Instead
+of creating an image, just create an HTML file in your <tt>images</tt> folder:
+
+  cat '<video src="/files/my-animation.webm"></video>" > images/1.html
+
 === Multi-image comics
 
 You can add up to 12 images to each comic page on ComicFury. To do that in

@@ -145,6 +145,25 @@ describe RageRender::ComicDrop.name do
     _(third['chapterdescription']).must_equal 'It carries on'
   end
 
+  it 'outputs HTML from a non-image comic' do
+    @site.add_static_file('/images/comic.html').data['content'] = '<b>Cool comic</b>'
+    @site.add_comic 'comic.html', image: '/images/comic.html'
+
+    payload = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
+    _(payload['comicimage']).must_equal '<b>Cool comic</b>'
+    _(payload['comicimagetype']).must_equal 'html'
+    _(payload['comicimageurl']).must_be_nil
+    _(payload['comicwidth']).must_equal 0
+    _(payload['comicheight']).must_equal 0
+
+    parts = payload['comicparts'].first
+    _(parts['html']).must_equal '<b>Cool comic</b>'
+    _(parts['imageonlyhtml']).must_equal '<b>Cool comic</b>'
+    _(parts['imageurl']).must_be_nil
+    _(parts['width']).must_be_nil
+    _(parts['height']).must_be_nil
+  end
+
   it 'outputs multiple comic parts for multi-image comics' do
     @site.add_static_file '/images/multi1.jpg'
     @site.add_static_file '/images/multi2.jpg'

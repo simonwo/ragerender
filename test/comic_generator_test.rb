@@ -29,6 +29,23 @@ describe ComicFromImageGenerator.name do
     _(comic.data['image']).must_equal '/images/booga.jpg'
   end
 
+  it 'creates a comic from just an HTML file' do
+    FileUtils.mkdir_p File.join(@site.source, 'images')
+    File.write File.join(@site.source, 'images', 'booga.html'), "<div>Some HTML</div>"
+    @site.add_page @site.source, 'images', 'booga.html'
+
+    ComicHTMLToStaticFileGenerator.new.generate(@site)
+    _(@site.pages).must_be :empty?
+    _(@site.static_files).wont_be :empty?
+
+    ComicFromImageGenerator.new.generate(@site)
+
+    _(@site.collections['comics'].docs.size).must_equal 1
+    comic = @site.collections['comics'].docs.first
+    _(comic.data['title']).must_equal 'booga'
+    _(comic.data['image']).must_equal '/images/booga.html'
+  end
+
   it 'matches comics to images without making new ones' do
     @site.add_static_file '/images/booga.jpg'
     @site.add_comic '_comics/booga.html', slug: 'booga', title: 'My comic'
