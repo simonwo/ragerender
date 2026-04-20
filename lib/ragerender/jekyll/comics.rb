@@ -8,6 +8,7 @@ require 'jekyll/drops/drop'
 require 'jekyll/drops/document_drop'
 require_relative '../date_formats'
 require_relative 'chapter'
+require_relative 'image'
 require_relative 'pipettes'
 
 Jekyll::Hooks.register :comics, :pre_render do |page, payload|
@@ -250,22 +251,28 @@ module RageRender
       end&.url
     end
 
+    def comicimagetype
+        'image'
+    end
+
+    def isimage
+      comicimagetype == 'image'
+    end
+
+    def_loop :comicparts, *(RageRender::ImageDrop.invokable_methods - Jekyll::Drops::DocumentDrop.invokable_methods)
+    def comicparts
+      imagedrops.map(&:to_liquid)
+    end
+
     # An HTML tag to print for the comic image. If there is a future image, then
     # this is also a link to the next comic page.
     def comicimage
-      linkopen = nextcomic ? <<~HTML : ''
-        <a href="#{nextcomic}">
-      HTML
-      image = <<~HTML
-        <img id="comicimage" src="#{comicimageurl}" alt="#{comictitle}"
-             width="#{comicwidth}" height="#{comicheight}"
-             title="#{comicdescription}">
-      HTML
-      linkclose = nextcomic ? <<~HTML : ''
-        </a>
-      HTML
-      [linkopen, image, linkclose].join
+        imagedrop.html
     end
+
+    def_safe_delegator :imagedrop, :imageurl, :comicimageurl
+    def_safe_delegator :imagedrop, :width, :comicwidth, default=0
+    def_safe_delegator :imagedrop, :height, :comicheight, default=0
 
     def keys
       super.reject {|k| private_methods.include? k.to_sym }
@@ -307,12 +314,15 @@ module RageRender
     end
 
     data_delegator 'image'
-    def_image_metadata :image
-    private :image, :image_url, :image_width, :image_height
 
-    public
-    alias comicimageurl image_url
-    alias comicwidth image_width
-    alias comicheight image_height
+    def imagedrops
+        relative_path = Pathname.new('/').join(image).to_path
+        obj = @obj.site.static_files.detect {|f| f.relative_path == relative_path }
+        [ImageDrop.new(obj, self)]
+    end
+
+    def imagedrop
+      imagedrops.first
+    end
   end
 end

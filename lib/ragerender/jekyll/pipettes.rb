@@ -11,9 +11,9 @@ module RageRender
       payload.send(:fallback_data).delete_if {|k| methods.include? k}
     end
 
-    def def_safe_delegator obj, key, aliaz
+    def def_safe_delegator obj, key, aliaz, default=nil
       define_method(aliaz.to_sym) do
-        send(obj.to_sym)&.send(key.to_sym)
+        send(obj.to_sym)&.send(key.to_sym) || default
       end
     end
 
@@ -50,7 +50,8 @@ module RageRender
       private :"#{prefix}_relative_path"
 
       define_method(:"#{prefix}_url") do
-        File.join (@obj.site.baseurl || ''), send(:"#{prefix}_relative_path")
+        site = @obj.instance_variable_get(:"@site") || @obj.send(:site)
+        File.join (site.baseurl || ''), send(:"#{prefix}_relative_path")
       end
 
       define_method(:"#{prefix}_obj") do
