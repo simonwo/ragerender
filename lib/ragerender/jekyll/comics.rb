@@ -30,7 +30,7 @@ module RageRender
       images = site.static_files.select {|f| f.relative_path.start_with? '/images' }.map {|f| [f.basename, f] }.to_h
       comics = site.collections['comics'].docs.map {|c| [c.basename_without_ext, c] }.to_h
       missing = Set.new(images.keys) - Set.new(comics.keys)
-      missing -= Set.new(comics.map {|k, c| c.data['image'] }.reject(&:nil?).map {|img| File.basename(img, '.*') })
+      missing -= Set.new(comics.flat_map {|k, c| (c.data['images'] || []) + [c.data['image']] }.reject(&:nil?).map {|img| File.basename(img, '.*') })
       missing.each do |slug|
         comic = Jekyll::Document.new(images[slug].relative_path, site: site, collection: site.collections['comics'])
         comic.send(:merge_defaults)
@@ -252,7 +252,11 @@ module RageRender
     end
 
     def comicimagetype
+      if imagedrops.size > 1
+        'multiimage'
+      else
         'image'
+      end
     end
 
     def isimage
@@ -267,7 +271,15 @@ module RageRender
     # An HTML tag to print for the comic image. If there is a future image, then
     # this is also a link to the next comic page.
     def comicimage
+      if comicimagetype == 'multiimage'
+        <<~HTML
+          <div class="comicsegments">
+            #{imagedrops.map(&:html).join}
+          </div>
+        HTML
+      else
         imagedrop.html
+      end
     end
 
     def_safe_delegator :imagedrop, :imageurl, :comicimageurl
@@ -313,12 +325,16 @@ module RageRender
       chapter&.next_doc.nil? ? nil : ChapterDrop.new(chapter.next_doc)
     end
 
+    data_delegator 'images'
     data_delegator 'image'
 
     def imagedrops
+      paths = (images || []) + [image]
+      paths.reject(&:nil?).map do |image|
         relative_path = Pathname.new('/').join(image).to_path
         obj = @obj.site.static_files.detect {|f| f.relative_path == relative_path }
-        [ImageDrop.new(obj, self)]
+        (paths.size > 1 ? MultiImageDrop : ImageDrop).new(obj, self)
+      end
     end
 
     def imagedrop

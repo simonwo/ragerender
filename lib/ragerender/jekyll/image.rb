@@ -57,4 +57,22 @@ module RageRender
 
     def fallback_data; {}; end
   end
+
+  class MultiImageDrop < ImageDrop
+    def imageonlyhtml
+      <<~HTML
+        <img src="#{imageurl}" alt="#{comictitle}"
+             width="#{width}" height="#{height}"
+             title="#{comicdescription}" class="comicsegmentimage">
+      HTML
+    end
+
+    def html
+      <<~HTML
+        <div class="segmentcontainer">
+          #{super}
+        </div>
+      HTML
+    end
+  end
 end

@@ -25,6 +25,7 @@ class FakeSite < Jekyll::Site
     file.instance_variable_set(:"@modified_time", Time.now)
     @static_files ||= []
     @static_files << file
+    file
   end
 
   def add_document collection, path, data

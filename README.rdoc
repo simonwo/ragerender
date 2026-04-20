@@ -209,6 +209,20 @@ You control this by setting a <tt>frontpage</tt> key in your site config.
 - anything else will display the extra page that has the matching
   <tt>slug</tt> in its Front Matter
 
+=== Multi-image comics
+
+You can add up to 12 images to each comic page on ComicFury. To do that in
+RageRender, add each image to an <tt>images</tt> key in your comic page:
+
+  ---
+  title: "Comic with many pages"
+  date: "2026-04-20 16:20"
+  images:
+  - /images/first.png
+  - /images/second.png
+  - /images/third.png
+  ---
+
 === Putting changes on ComicFury
 
 Once you're done making changes, you can <tt>pack</tt> your layout:

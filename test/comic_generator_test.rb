@@ -53,4 +53,18 @@ describe ComicFromImageGenerator.name do
     _(comic.data['title']).must_equal 'greatness'
     _(comic.data['image']).must_equal '/images/booga.jpg'
   end
+
+  it 'acknowledges multiple image comics' do
+    @site.add_static_file '/images/booga1.jpg'
+    @site.add_static_file '/images/booga2.jpg'
+    @site.add_comic '_comics/whatever.html', slug: 'whatever', title: 'greatness', images: ['/images/booga1.jpg', '/images/booga2.jpg']
+
+    ComicFromImageGenerator.new.generate(@site)
+
+    _(@site.collections['comics'].docs.size).must_equal 1
+    comic = @site.collections['comics'].docs.first
+    _(comic.data['title']).must_equal 'greatness'
+    _(comic.data['image']).must_be_nil
+    _(comic.data['images']).must_equal ['/images/booga1.jpg', '/images/booga2.jpg']
+  end
 end

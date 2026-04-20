@@ -144,4 +144,30 @@ describe RageRender::ComicDrop.name do
     _(third['chaptername']).must_equal 'Chapter 2'
     _(third['chapterdescription']).must_equal 'It carries on'
   end
+
+  it 'outputs multiple comic parts for multi-image comics' do
+    @site.add_static_file '/images/multi1.jpg'
+    @site.add_static_file '/images/multi2.jpg'
+    @site.add_comic 'comic.html', images: ['/images/multi1.jpg', 'images/multi2.jpg']
+
+    payload = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
+    _(payload['comicimage']).wont_be :empty?
+    _(payload['comicimage']).must_include '<div class="comicsegments">'
+    _(payload['comicimagetype']).must_equal 'multiimage'
+    _(payload['comicimageurl']).must_equal '/images/multi1.jpg'
+
+    parts = payload['comicparts']
+    _(parts.size).must_equal 2
+
+    first = parts.first
+    _(first['html']).wont_be :empty?
+    _(first['imageonlyhtml']).wont_be :empty?
+    _(first['html']).wont_equal first['imageonlyhtml']
+    _(first['imageurl']).must_equal '/images/multi1.jpg'
+
+    last = parts.last
+    _(last['html']).wont_equal first['html']
+    _(last['imageonlyhtml']).wont_equal first['imageonlyhtml']
+    _(last['imageurl']).must_equal '/images/multi2.jpg'
+  end
 end
