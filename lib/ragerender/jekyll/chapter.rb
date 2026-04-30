@@ -84,7 +84,7 @@ module RageRender
     def_delegator :@obj, :url, :chapterarchiveurl
 
     def chapterid
-      @obj.collection.docs.index @obj
+      @obj.collection.docs.sort_by(&:path).index @obj
     end
 
     def chaptername

@@ -145,6 +145,23 @@ describe RageRender::ComicDrop.name do
     _(third['chapterdescription']).must_equal 'It carries on'
   end
 
+  it 'uses appropriate values for chapter variables when comic is not in a chapter' do
+    @site.add_chapter 'first.yml', slug: 'first', title: 'Chapter the First', description: 'It begins!'
+    @site.add_comic '1.html', image: @img
+    @site.add_comic '2.html', image: @img
+
+    RageRender::ChapterFromComicsGenerator.new.generate(@site)
+    _(@site.collections['chapters'].docs).wont_be :one?
+
+    payload = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
+    _(payload['chapterid']).must_equal 0
+    _(payload['chaptername']).must_equal 'Unchaptered'
+    _(payload['chapterdescription']).must_equal 'These comic pages are not part of any chapter'
+    _(payload['chapterlink']).must_equal '/archive/0/'
+    _(payload['isfirstcomicinchapter']).must_equal true
+    _(payload['islastcomicinchapter']).must_equal false
+  end
+
   it 'outputs HTML from a non-image comic' do
     @site.add_static_file('/images/comic.html').data['content'] = '<b>Cool comic</b>'
     @site.add_comic 'comic.html', image: '/images/comic.html'

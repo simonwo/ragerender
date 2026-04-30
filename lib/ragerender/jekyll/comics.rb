@@ -9,7 +9,12 @@ require 'jekyll/drops/document_drop'
 require_relative '../date_formats'
 require_relative 'chapter'
 require_relative 'image'
+require_relative 'setup_collection'
 require_relative 'pipettes'
+
+Jekyll::Hooks.register :site, :after_init do |site|
+  setup_collection site, :comics, '/:collection/:slug/', layout: 'comic-page', chapter: '0'
+end
 
 Jekyll::Hooks.register :comics, :pre_render do |page, payload|
   RageRender::Pipettes.clean_payload payload

@@ -64,9 +64,6 @@ Jekyll::Hooks.register :site, :after_init do |site|
   site.config['url'] ||= "https://#{File.basename(site.source)}.thecomicseries.com"
   site.config = site.config
 
-  setup_collection site, :comics, '/:collection/:slug/', layout: 'comic-page', chapter: '0'
-  setup_collection site, :posts, '/blogarchive/:slug/', layout: 'blog-display'
-
   site.config['defaults'].push({
     'scope' => {
       'path' => '',

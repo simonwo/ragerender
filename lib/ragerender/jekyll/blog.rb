@@ -1,7 +1,12 @@
 require 'jekyll/hooks'
 require 'jekyll/drops/document_drop'
 require_relative '../date_formats'
+require_relative 'setup_collection'
 require_relative 'pipettes'
+
+Jekyll::Hooks.register :site, :after_init do |site|
+  setup_collection site, :posts, '/blogarchive/:slug/', layout: 'blog-display'
+end
 
 Jekyll::Hooks.register :posts, :pre_render do |post, payload|
   RageRender::Pipettes.clean_payload payload
