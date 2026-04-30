@@ -16,21 +16,20 @@ module RageRender
       !searchterm.nil?
     end
 
-    def_loop :searchresults, :number, *ComicDrop::PAGINATION_FIELDS
+    def_loop :searchresults, *PaginatedComicDrop.own_methods
     def searchresults
       return [] unless searched
-      @results ||= @obj.site.collections['comics'].docs.select do |comic|
-        [
-          *comic.data.fetch('tags', []),
-          comic.content,
-          *comic.data.fetch('authornotes', []).flat_map {|n| n['comment'] },
-        ].map(&:downcase).any? {|c| c.include?(searchterm.downcase) }
-      end.map.each_with_index do |comic, index|
-        drop = ComicDrop.new(comic)
-        {
-          'number' => index + 1,
-          **ComicDrop::PAGINATION_FIELDS.map {|f| [f.to_s, drop[f]] }.to_h,
-        }
+      @results ||= begin
+        comics = @obj.site.collections['comics'].docs.select do |comic|
+          [
+            *comic.data.fetch('tags', []),
+            comic.content,
+            *comic.data.fetch('authornotes', []).flat_map {|n| n['comment'] },
+          ].map(&:downcase).any? {|c| c.include?(searchterm.downcase) }
+        end
+        comics.map do |comic|
+          PaginatedComicDrop.new(comic, comics)
+        end
       end
     end
 

@@ -125,32 +125,26 @@ module RageRender
       end
     end
 
-    def_loop :comics_paginated, :number, :newchapter, :chapterend, *ComicDrop::PAGINATION_FIELDS, *ChapterDrop::PAGINATION_FIELDS
+    def_loop :comics_paginated, *PaginatedComicDrop.own_methods
     def comics_paginated
       number = @obj.data['number']
       comics = if number
         selected_comics.to_a[number - 1]
       else
         selected_comics.to_a.flatten
-      end&.group_by {|c| c.data['chapter'] } || []
+      end || []
 
-      comics.map do |chapter, comics|
-        chapter_data = ChapterDrop.new(@obj.site.collections['chapters'].docs.detect {|c| c.data['slug'] == chapter })
-        comics.each_with_index.map do |comic, index|
-          drop = ComicDrop.new(comic)
-          {
-            **ComicDrop::PAGINATION_FIELDS.map {|field| [field, drop[field]] }.to_h,
-            **ChapterDrop::PAGINATION_FIELDS.map {|field| [field, chapter_data[field]] }.to_h,
-            'number' => index + 1,
-            'newchapter' => index == 0,
-            'chapterend' => index == comics.size - 1,
-          }
-        end
-      end.flatten
+      comics.map do |comic|
+        PaginatedComicDrop.new(comic, comics)
+      end
     end
 
     def lastpagenumber
       selected_comics.size
+    end
+
+    def thumbnail_box_styles
+      'position:fixed; opacity:0; pointer-events:none; z-index:10000;'
     end
 
     private

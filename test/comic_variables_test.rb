@@ -141,6 +141,20 @@ describe RageRender::ComicDrop.name do
     _(third['chapterid']).must_equal 1
     _(third['chaptername']).must_equal 'Chapter 2'
     _(third['chapterdescription']).must_equal 'It carries on'
+
+    first_paginated = RageRender::PaginatedComicDrop.new(@site.collections['comics'].docs.first, @site.collections['comics'].docs).to_liquid
+    _(first_paginated['chapterid']).must_equal 0
+    _(first_paginated['chaptername']).must_equal 'Chapter the First'
+    _(first_paginated['chapterdescription']).must_equal 'It begins!'
+    _(first_paginated['newchapter']).must_equal true
+    _(first_paginated['chapterend']).must_equal true
+
+    third_paginated = RageRender::PaginatedComicDrop.new(@site.collections['comics'].docs.last, @site.collections['comics'].docs).to_liquid
+    _(third_paginated['chapterid']).must_equal 1
+    _(third_paginated['chaptername']).must_equal 'Chapter 2'
+    _(third_paginated['chapterdescription']).must_equal 'It carries on'
+    _(third_paginated['newchapter']).must_equal true
+    _(third_paginated['chapterend']).must_equal true
   end
 
   it 'uses appropriate values for chapter variables when comic is not in a chapter' do
@@ -158,6 +172,20 @@ describe RageRender::ComicDrop.name do
     _(payload['chapterlink']).must_equal '/archive/0/'
     _(payload['isfirstcomicinchapter']).must_equal true
     _(payload['islastcomicinchapter']).must_equal false
+
+    paginated = RageRender::PaginatedComicDrop.new(@site.collections['comics'].docs.first, @site.collections['comics'].docs).to_liquid
+    _(paginated['chapterid']).must_equal 0
+    _(paginated['chaptername']).must_equal 'Unchaptered'
+    _(paginated['chapterdescription']).must_equal 'These comic pages are not part of any chapter'
+    _(paginated['newchapter']).must_equal true
+    _(paginated['chapterend']).must_equal false
+
+    paginated = RageRender::PaginatedComicDrop.new(@site.collections['comics'].docs.last, @site.collections['comics'].docs).to_liquid
+    _(paginated['chapterid']).must_equal 0
+    _(paginated['chaptername']).must_equal 'Unchaptered'
+    _(paginated['chapterdescription']).must_equal 'These comic pages are not part of any chapter'
+    _(paginated['newchapter']).must_equal false
+    _(paginated['chapterend']).must_equal true
   end
 
   it 'outputs HTML from a non-image comic' do
@@ -177,11 +205,18 @@ describe RageRender::ComicDrop.name do
     _(parts['imageurl']).must_be_nil
     _(parts['width']).must_be_nil
     _(parts['height']).must_be_nil
+
+    paginated = RageRender::PaginatedComicDrop.new(@site.collections['comics'].docs.first, @site.collections['comics'].docs).to_liquid
+    _(paginated['thumbnail_url']).must_be_nil
+    _(paginated['thumbnail_width']).must_equal 0
+    _(paginated['thumbnail_height']).must_equal 0
+    _(paginated['thumbnail_width_small']).must_equal 0
+    _(paginated['thumbnail_height_small']).must_equal 0
   end
 
   it 'outputs multiple comic parts for multi-image comics' do
-    @site.add_static_file '/images/multi1.jpg'
-    @site.add_static_file '/images/multi2.jpg'
+    @site.add_static_file '/images/multi1.jpg', {'width' => 1080, 'height' => 1920}
+    @site.add_static_file '/images/multi2.jpg', {'width' => 600, 'height' => 800}
     @site.add_comic 'comic.html', images: ['/images/multi1.jpg', 'images/multi2.jpg']
 
     payload = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
@@ -189,6 +224,15 @@ describe RageRender::ComicDrop.name do
     _(payload['comicimage']).must_include '<div class="comicsegments">'
     _(payload['comicimagetype']).must_equal 'multiimage'
     _(payload['comicimageurl']).must_equal '/images/multi1.jpg'
+    _(payload['comicwidth']).must_equal 1080
+    _(payload['comicheight']).must_equal 1920
+
+    paginated = RageRender::PaginatedComicDrop.new(@site.collections['comics'].docs.first, @site.collections['comics'].docs).to_liquid
+    _(paginated['thumbnail_url']).must_equal '/images/multi1.jpg'
+    _(paginated['thumbnail_width']).must_equal 236
+    _(paginated['thumbnail_height']).must_equal 420
+    _(paginated['thumbnail_width_small']).must_equal 118
+    _(paginated['thumbnail_height_small']).must_equal 210
 
     parts = payload['comicparts']
     _(parts.size).must_equal 2
@@ -198,10 +242,14 @@ describe RageRender::ComicDrop.name do
     _(first['imageonlyhtml']).wont_be :empty?
     _(first['html']).wont_equal first['imageonlyhtml']
     _(first['imageurl']).must_equal '/images/multi1.jpg'
+    _(first['width']).must_equal 1080
+    _(first['height']).must_equal 1920
 
     last = parts.last
     _(last['html']).wont_equal first['html']
     _(last['imageonlyhtml']).wont_equal first['imageonlyhtml']
     _(last['imageurl']).must_equal '/images/multi2.jpg'
+    _(last['width']).must_equal 600
+    _(last['height']).must_equal 800
   end
 end

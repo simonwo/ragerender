@@ -20,9 +20,10 @@ class FakeSite < Jekyll::Site
     @collections[label] = Jekyll::Collection.new(self, label)
   end
 
-  def add_static_file path
+  def add_static_file path, data={}
     file = Jekyll::StaticFile.new(self, "", File.dirname(path), File.basename(path))
     file.instance_variable_set(:"@modified_time", Time.now)
+    file.data.merge!(data)
     @static_files ||= []
     @static_files << file
     file

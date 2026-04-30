@@ -1,6 +1,7 @@
 # Pipettes help you make drops.
 require 'cgi'
 require 'dimensions'
+require 'jekyll/drops/document_drop'
 
 module RageRender
   module Pipettes
@@ -9,6 +10,10 @@ module RageRender
       sets = Jekyll::Drops::DocumentDrop.subclasses.map(&:invokable_methods)
       methods = sets.reduce(Set.new) {|s,acc| acc.merge(s)} - Set.new(Jekyll::Drops::DocumentDrop.invokable_methods)
       payload.send(:fallback_data).delete_if {|k| methods.include? k}
+    end
+
+    def own_methods
+      invokable_methods - Jekyll::Drops::DocumentDrop.invokable_methods
     end
 
     def def_safe_delegator obj, key, aliaz, default=nil
@@ -41,6 +46,28 @@ module RageRender
         Pathname.new(@obj.path).extname != '.html' ?  escape(str) : str
       end
       mod.send(:private, :maybe_escape)
+
+      mod.define_method(:scaled_width) do |width, height, max_width, max_height|
+        return nil if width.nil? || height.zero?
+
+        if (height.to_f / max_height) > (width.to_f / max_width)
+          (scaled_height(width, height, max_width, max_height) * width) / height
+        else
+          [max_width, width].min
+        end
+      end
+      mod.send(:private, :scaled_width)
+
+      mod.define_method(:scaled_height) do |width, height, max_width, max_height|
+        return nil if height.nil? || width.zero?
+
+        if (height.to_f / max_height) > (width.to_f / max_width)
+          [max_height, height].min
+        else
+          (scaled_width(width, height, max_width, max_height) * height) / width
+        end
+      end
+      mod.send(:private, :scaled_height)
     end
 
     def def_image_metadata prefix

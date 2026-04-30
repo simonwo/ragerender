@@ -74,8 +74,6 @@ module RageRender
     COVER_MAX_HEIGHT = 420
     COVER_MAX_WIDTH = 300
 
-    PAGINATION_FIELDS = %w[ chaptername chapterdescription chapterid ]
-
     extend Pipettes
     extend Forwardable
 
@@ -92,23 +90,11 @@ module RageRender
     end
 
     def cover_width_small
-      return nil if cover_width.nil?
-
-      if (cover_height.to_f / COVER_MAX_HEIGHT) > (cover_width.to_f / COVER_MAX_WIDTH)
-        (cover_height_small * cover_width) / cover_height
-      else
-        [COVER_MAX_WIDTH, cover_width].min
-      end
+      scaled_width(cover_width, cover_height, COVER_MAX_WIDTH, COVER_MAX_HEIGHT)
     end
 
     def cover_height_small
-      return nil if cover_height.nil?
-
-      if (cover_height.to_f / COVER_MAX_HEIGHT) > (cover_width.to_f / COVER_MAX_WIDTH)
-        [COVER_MAX_HEIGHT, cover_height].min
-      else
-        (cover_width_small * cover_height) / cover_width
-      end
+      scaled_height(cover_width, cover_height, COVER_MAX_WIDTH, COVER_MAX_HEIGHT)
     end
 
     def firstcomicinchapter

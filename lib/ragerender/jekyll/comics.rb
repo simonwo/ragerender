@@ -123,10 +123,70 @@ module RageRender
     end
   end
 
-  class ComicDrop < Jekyll::Drops::DocumentDrop
+  class PaginatedComicDrop < Jekyll::Drops::DocumentDrop
     extend Pipettes
 
-    PAGINATION_FIELDS = %w[ comicurl comictitle posttime ]
+    THUMBNAIL_MAX_HEIGHT = 420
+    THUMBNAIL_MAX_WIDTH = 400
+    THUMBNAIL_SMALL_MAX_HEIGHT = 210
+    THUMBNAIL_SMALL_MAX_WIDTH = 200
+
+    def initialize obj, all
+      super(obj)
+      @all = all
+    end
+
+    def_delegators :comicdrop, :comicurl, :comictitle, :posttime
+    def_safe_delegator :chapterdrop, :chaptername, :chaptername
+    def_safe_delegator :chapterdrop, :chapterdescription, :chapterdescription
+    def_safe_delegator :chapterdrop, :chapterid, :chapterid
+
+    def number
+      @all.index(@obj) + 1
+    end
+
+    def newchapter
+      @all.select {|c| c.data['chapter'] == @obj.data['chapter'] }.first == @obj
+    end
+
+    def chapterend
+      @all.select {|c| c.data['chapter'] == @obj.data['chapter'] }.last == @obj
+    end
+
+    def_delegator :comicdrop, :comicimageurl, :thumbnail_url
+
+    def thumbnail_width
+      scaled_width(comicdrop.comicwidth, comicdrop.comicheight, THUMBNAIL_MAX_WIDTH, THUMBNAIL_MAX_HEIGHT) || 0
+    end
+
+    def thumbnail_height
+      scaled_height(comicdrop.comicwidth, comicdrop.comicheight, THUMBNAIL_MAX_WIDTH, THUMBNAIL_MAX_HEIGHT) || 0
+    end
+
+    def thumbnail_width_small
+      scaled_width(comicdrop.comicwidth, comicdrop.comicheight, THUMBNAIL_SMALL_MAX_WIDTH, THUMBNAIL_SMALL_MAX_HEIGHT) || 0
+    end
+
+    def thumbnail_height_small
+      scaled_height(comicdrop.comicwidth, comicdrop.comicheight, THUMBNAIL_SMALL_MAX_WIDTH, THUMBNAIL_SMALL_MAX_HEIGHT) || 0
+    end
+
+    private
+    def comicdrop
+      @comicdrop ||= ComicDrop.new(@obj)
+    end
+
+    def chapterdrop
+      comicdrop.send(:chapterdrop)
+    end
+
+    def index
+      @index ||= chapterdrop.send(:comics).index(@obj)
+    end
+  end
+
+  class ComicDrop < Jekyll::Drops::DocumentDrop
+    extend Pipettes
 
     delegate_method_as :id, :comicid
     def_delegator :@obj, :url, :comicurl
