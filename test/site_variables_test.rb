@@ -62,12 +62,14 @@ describe RageRender::WebcomicDrop.name do
     payload = RageRender::WebcomicDrop.new(overview).to_liquid
     _(payload['iscomicrelatedpage']).must_equal true
     _(payload['iscomicpage']).must_equal false
+    _(payload['comicsnum']).must_equal 0
 
     @site.add_static_file '/images/booga.jpg'
     comic = @site.add_comic '_comics/booga.html', slug: 'booga', title: 'My comic'
     payload = RageRender::WebcomicDrop.new(comic).to_liquid
     _(payload['iscomicrelatedpage']).must_equal true
     _(payload['iscomicpage']).must_equal true
+    _(payload['comicsnum']).must_equal 1
 
     @site.config['frontpage'] = 'archive'
     RageRender::FrontpageGenerator.new.generate(@site)

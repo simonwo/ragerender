@@ -158,10 +158,6 @@ module RageRender
       1 + all_comics.index(@obj)
     end
 
-    def comicsnum
-      all_comics.size
-    end
-
     def posttime
       comicfury_date(@obj.date)
     end

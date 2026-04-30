@@ -16,12 +16,10 @@ describe RageRender::ComicDrop.name do
     @site.add_comic 'comic.html', image: @img
     payload = RageRender::ComicDrop.new(@site.collections['comics'].docs.first).to_liquid
     _(payload['comicnumber']).must_equal 1
-    _(payload['comicsnum']).must_equal 1
 
     @site.add_comic 'comic2.html', image: @img
     payload = RageRender::ComicDrop.new(@site.collections['comics'].docs.last).to_liquid
     _(payload['comicnumber']).must_equal 2
-    _(payload['comicsnum']).must_equal 2
   end
 
   it 'correctly gives variables for next and previous comics' do
