@@ -230,6 +230,23 @@ RageRender, add each image to an <tt>images</tt> key in your comic page:
   - /images/third.png
   ---
 
+=== Testing search pages
+
+Live search does not work in RageRender, as your site is statically built and
+can't respond to new data from the browser. However, you can simulate a search
+when you build the site to help test search results designs. To do that, add a
+`searchterm` to the search page using defaults in your `_config.yml`:
+
+    defaults:
+    - scope:
+        path: ''
+        layout: search
+      values:
+        searchterm: "my character"
+
+The search that gets performed will be somewhat similar to how ComicFury will
+search your comic, but may not be exactly the same.
+
 === Putting changes on ComicFury
 
 Once you're done making changes, you can <tt>pack</tt> your layout:
