@@ -82,9 +82,15 @@ module RageRender
       searchresults.any?
     end
 
+    def_pages :all_pages
+
     private
     def all_results
       @all_results ||= RageRender::search(@obj.site, searchterm).each_slice(RESULTS_PER_PAGE).to_a
+    end
+
+    def all_pages
+      @obj.site.pages.select {|p| p.data['searchterm'] == searchterm && p.permalink =~ /id/ }
     end
   end
 end

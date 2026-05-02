@@ -90,31 +90,16 @@ module RageRender
       all_blogs[number-1]&.map {|blog| PaginatedBlogDrop.new(blog).to_liquid } || []
     end
 
-    def lastpagenumber
-      all_blogs.size
-    end
-
-    # Objects used for laying out page numbers.
-    #
-    # The page numbers always include:
-    # - the first page
-    # - the last page
-    # - two pages around the current page
-    def pages
-      [1].chain([1, all_blogs.size, *(number-2..number+2).to_a].uniq).select {|i| i >= 1 && i <= all_blogs.size }.sort.each_cons(2).map do |prev, page|
-        {
-          'page' => page,
-          'pagelink' => File.join(@obj.url, 'page', page.to_s),
-          'is_current' => page == number,
-          'skipped_ahead' => page - prev > 1,
-        }
-      end
-    end
-    def_loop :pages, :page, :pagelink, :is_current, :skipped_ahead
+    def_pages :all_pages
 
     private
     def all_blogs
       @all_blogs = @obj.site.posts.docs.each_slice(BLOGS_PER_PAGE).to_a
+    end
+
+    def all_pages
+      root = Pathname.new(@obj.permalink).split.first.to_s
+      @obj.site.pages.select {|page| page.permalink =~ /#{root}\/page/ }
     end
   end
 end

@@ -102,5 +102,28 @@ module RageRender
         send(:"#{prefix}_obj") && (send(:"#{prefix}_obj").data['height'] ||= Dimensions.height(send(:"#{prefix}_path")) rescue nil)
       end
     end
+
+    def def_pages all_pages
+      define_method(:lastpagenumber) do
+        send(all_pages).size
+      end
+
+      # Objects used for laying out page numbers.
+      #
+      # The page numbers always include:
+      # - the first page
+      # - the last page
+      # - two pages around the current page
+      define_method(:pages) do
+        pages = send(all_pages)
+        [1].chain([1, pages.size, *(number-2..number+2).to_a].uniq).select {|i| i >= 1 && i <= pages.size }.sort.map do |i|
+          pages[i-1]
+        end.each_cons(2).map do |prev, page|
+          PaginatedPageDrop.new(page, @obj, prev)
+        end
+      end
+
+      def_loop :pages, *PaginatedBlogDrop.own_methods
+    end
   end
 end

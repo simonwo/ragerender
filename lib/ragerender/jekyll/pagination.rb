@@ -1,3 +1,5 @@
+require_relative 'pipettes'
+
 module RageRender
   module PaginationGenerator
     def handle_page page
@@ -25,6 +27,32 @@ module RageRender
         Jekyll.logger.debug 'Paginating:', paged_archive.data['permalink']
         handle_page paged_archive
       end
+    end
+  end
+
+  class PaginatedPageDrop < Jekyll::Drops::Drop
+    extend Pipettes
+
+    def initialize obj, current_page, prev_page
+      super(obj)
+      @current = current_page
+      @prev = prev_page
+    end
+
+    def page
+      @obj.data['number']
+    end
+
+    def pagelink
+      @obj.permalink
+    end
+
+    def is_current
+      page == @current.data['number']
+    end
+
+    def skipped_ahead
+      page - @prev.data['number'] > 1
     end
   end
 end
