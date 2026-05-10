@@ -196,7 +196,16 @@ module RageRender
     def permalink
       URI.join(@obj.site.config["url"], @obj.site.baseurl || '/', @obj.url).to_s
     end
+
     data_delegator 'comments'
+
+    def allowcomments
+      @obj.data.fetch('allowcomments', true) && @obj.site.config.fetch('allowcomments', true)
+    end
+
+    def showcomments
+      allowcomments || (comments || []).any?
+    end
 
     def comictitle
       escape @obj.data['title']

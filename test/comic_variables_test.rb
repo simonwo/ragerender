@@ -252,4 +252,27 @@ describe RageRender::ComicDrop.name do
     _(last['width']).must_equal 600
     _(last['height']).must_equal 800
   end
+
+  it 'allows comments to be switched off per page' do
+    zero_comments_allowed = @site.add_comic 'z-a.html', image: @img
+    with_comments_allowed = @site.add_comic 'w-a.html', image: @img, comments: [{'comment' => 'hello'}]
+    zero_comments_disallowed = @site.add_comic 'z-d.html', image: @img, allowcomments: false
+    with_comments_disallowed = @site.add_comic 'w-d.html', image: @img, comments: [{'comment' => 'hello'}], allowcomments: false
+
+    zca_payload = RageRender::ComicDrop.new(zero_comments_allowed).to_liquid
+    _(zca_payload['allowcomments']).must_equal true
+    _(zca_payload['showcomments']).must_equal true
+
+    wca_payload = RageRender::ComicDrop.new(with_comments_allowed).to_liquid
+    _(wca_payload['allowcomments']).must_equal true
+    _(wca_payload['showcomments']).must_equal true
+
+    zcd_payload = RageRender::ComicDrop.new(zero_comments_disallowed).to_liquid
+    _(zcd_payload['allowcomments']).must_equal false
+    _(zcd_payload['showcomments']).must_equal false
+
+    wcd_payload = RageRender::ComicDrop.new(with_comments_disallowed).to_liquid
+    _(wcd_payload['allowcomments']).must_equal false
+    _(wcd_payload['showcomments']).must_equal true
+  end
 end

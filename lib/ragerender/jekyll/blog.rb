@@ -40,6 +40,16 @@ module RageRender
       @obj.next_doc&.url
     end
 
+    data_delegator 'comments'
+
+    def allowcomments
+      @obj.data.fetch('allowcomments', true) && @obj.site.config.fetch('allowcomments', true)
+    end
+
+    def showcomments
+      allowcomments || (comments || []).any?
+    end
+
     def to_liquid
       super.reject do |k, v|
         Jekyll::Drops::DocumentDrop::NESTED_OBJECT_FIELD_BLACKLIST.include? k

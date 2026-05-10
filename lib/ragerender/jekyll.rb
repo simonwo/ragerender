@@ -136,7 +136,8 @@ class RageRender::WebcomicDrop < Jekyll::Drops::Drop
   end
 
   def_config_delegator :search, :searchon
-  %w{bannerads allowratings showpermalinks showcomments allowcomments}.each do |var|
+  def_config_delegator :allowcomments, :showcomments, true
+  %w{bannerads allowratings showpermalinks allowguestcomments}.each do |var|
     def_config_delegator var, var
   end
 
