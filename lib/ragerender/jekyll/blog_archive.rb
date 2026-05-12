@@ -57,24 +57,17 @@ module RageRender
   class PaginatedBlogDrop < Jekyll::Drops::DocumentDrop
     extend Pipettes
 
-    def_data_delegator :title, :blogtitle
+    def_delegators :drop, :blogtitle, :posttime, :allowcomments, :authorname, :blog, :profilelink
     def_delegator :@obj, :url, :bloglink
-    def_data_delegator :author, :authorname
-    def_delegator :@obj, :content, :blog
-    # TODO profilelink
 
     private delegate_method_as :data, :fallback_data
 
-    def posttime
-      comicfury_date(@obj.date)
-    end
-
-    def allowcomments
-      @obj.site.config['allowcomments']
-    end
-
     def comments
-      (@obj.data['comments'] || []).size
+      drop.comments.size
+    end
+
+    private def drop
+      @drop ||= BlogDrop.new(@obj)
     end
   end
 

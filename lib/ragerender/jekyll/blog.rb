@@ -20,6 +20,10 @@ module RageRender
 
     def_data_delegator :author, :authorname
 
+    def profilelink
+      "https://comicfury.com/profile.php?username=#{authorname}"
+    end
+
     def blogtitle
       escape @obj.data['title']
     end
@@ -40,7 +44,9 @@ module RageRender
       @obj.next_doc&.url
     end
 
-    data_delegator 'comments'
+    def comments
+      @obj.data['comments'] || []
+    end
 
     def allowcomments
       @obj.data.fetch('allowcomments', true) && @obj.site.config.fetch('allowcomments', true)
